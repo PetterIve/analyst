@@ -1,0 +1,32 @@
+{
+  "projectName": "analyst",
+  "mode": "file-router",
+  "typescript": true,
+  "packageManager": "npm",
+  "includeExamples": false,
+  "tailwind": true,
+  "addOnOptions": {
+    "prisma": {
+      "database": "postgres"
+    }
+  },
+  "envVarValues": {
+    "VITE_CLERK_PUBLISHABLE_KEY": "pk_test_YW1hemVkLWhlcm1pdC02Ny5jbGVyay5hY2NvdW50cy5kZXYk"
+  },
+  "git": true,
+  "routerOnly": false,
+  "version": 1,
+  "framework": "react",
+  "chosenAddOns": [
+    "biome",
+    "clerk",
+    "sentry",
+    "prisma",
+    "shadcn",
+    "t3env",
+    "tRPC",
+    "storybook",
+    "neon",
+    "tanstack-query"
+  ]
+}
