@@ -10,63 +10,73 @@ const adapter = new PrismaPg({
 
 const prisma = new PrismaClient({ adapter })
 
+// Seed is "add missing rows only" — it never overwrites existing rows, so operator
+// edits via /admin/* and engine-driven factor state mutations survive reseeds.
+// To force seed values, wipe the table first (e.g. `prisma migrate reset`).
+
 async function seedTickers() {
+  let created = 0
   for (const t of tickerSeeds) {
-    await prisma.ticker.upsert({
+    const existing = await prisma.ticker.findUnique({
       where: { symbol: t.symbol },
-      update: {
-        exchange: t.exchange,
-        segment: t.segment,
-        name: t.name,
-      },
-      create: {
+      select: { id: true },
+    })
+    if (existing) continue
+    await prisma.ticker.create({
+      data: {
         symbol: t.symbol,
         exchange: t.exchange,
         segment: t.segment,
         name: t.name,
       },
     })
+    created++
   }
-  console.log(`  tickers: ${tickerSeeds.length} upserted`)
+  console.log(`  tickers: ${created} created, ${tickerSeeds.length - created} existing`)
 }
 
 async function seedFactors() {
+  let created = 0
   for (const f of factorSeeds) {
-    await prisma.factorDefinition.upsert({
+    const existing = await prisma.factorDefinition.findUnique({
       where: { slug: f.slug },
-      update: {
-        name: f.name,
-        description: f.description,
-        rangeMin: f.rangeMin,
-        rangeMax: f.rangeMax,
-        defaultValue: f.defaultValue,
-        weight: f.weight,
-      },
-      create: f,
+      select: { id: true },
     })
+    if (existing) continue
+    await prisma.factorDefinition.create({ data: f })
+    created++
   }
-  console.log(`  factors: ${factorSeeds.length} upserted`)
+  console.log(`  factors: ${created} created, ${factorSeeds.length - created} existing`)
 }
 
 async function seedFactorState() {
   const tickers = await prisma.ticker.findMany()
   const factors = await prisma.factorDefinition.findMany()
-  let count = 0
+  let created = 0
+  let existing = 0
   for (const ticker of tickers) {
     const overrides = factorInitialByTicker[ticker.symbol] ?? {}
     for (const factor of factors) {
-      const value = overrides[factor.slug] ?? factor.defaultValue
-      await prisma.factorState.upsert({
+      const already = await prisma.factorState.findUnique({
         where: {
           tickerId_factorId: { tickerId: ticker.id, factorId: factor.id },
         },
-        update: { value },
-        create: { tickerId: ticker.id, factorId: factor.id, value },
+        select: { id: true },
       })
-      count++
+      if (already) {
+        existing++
+        continue
+      }
+      const value = overrides[factor.slug] ?? factor.defaultValue
+      await prisma.factorState.create({
+        data: { tickerId: ticker.id, factorId: factor.id, value },
+      })
+      created++
     }
   }
-  console.log(`  factor_state: ${count} rows (${tickers.length} tickers × ${factors.length} factors)`)
+  console.log(
+    `  factor_state: ${created} created, ${existing} existing (${tickers.length} tickers × ${factors.length} factors)`,
+  )
 }
 
 async function seedNewsSources() {

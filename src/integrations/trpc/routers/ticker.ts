@@ -10,6 +10,9 @@ export const tickerRouter = {
     })
   }),
 
+  // TODO(auth): Guard with adminProcedure before exposing beyond local dev.
+  // Reachable today by anyone who can hit /api/trpc; follow-up PR will add
+  // tRPC context + header-based admin auth.
   update: publicProcedure
     .input(
       z.object({

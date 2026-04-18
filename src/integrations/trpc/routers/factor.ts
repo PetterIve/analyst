@@ -8,6 +8,8 @@ export const factorRouter = {
     return prisma.factorDefinition.findMany({ orderBy: { slug: 'asc' } })
   }),
 
+  // TODO(auth): Guard with adminProcedure before exposing beyond local dev.
+  // Weight edits affect composite scoring and therefore alert behavior.
   update: publicProcedure
     .input(
       z.object({
