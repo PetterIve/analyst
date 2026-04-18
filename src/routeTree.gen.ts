@@ -10,8 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ApiLogsRouteImport } from './routes/api.logs'
+import { Route as AdminTickersRouteImport } from './routes/admin/tickers'
+import { Route as AdminFactorsRouteImport } from './routes/admin/factors'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
 
 const AboutRoute = AboutRouteImport.update({
@@ -19,15 +23,35 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const ApiLogsRoute = ApiLogsRouteImport.update({
   id: '/api/logs',
   path: '/api/logs',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTickersRoute = AdminTickersRouteImport.update({
+  id: '/tickers',
+  path: '/tickers',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminFactorsRoute = AdminFactorsRouteImport.update({
+  id: '/factors',
+  path: '/factors',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
   id: '/api/trpc/$',
@@ -37,33 +61,69 @@ const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/admin/factors': typeof AdminFactorsRoute
+  '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin/factors': typeof AdminFactorsRoute
+  '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
+  '/admin': typeof AdminIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/admin/factors': typeof AdminFactorsRoute
+  '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
+  '/admin/': typeof AdminIndexRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/api/logs' | '/api/trpc/$'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/about'
+    | '/admin/factors'
+    | '/admin/tickers'
+    | '/api/logs'
+    | '/admin/'
+    | '/api/trpc/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/api/logs' | '/api/trpc/$'
-  id: '__root__' | '/' | '/about' | '/api/logs' | '/api/trpc/$'
+  to:
+    | '/'
+    | '/about'
+    | '/admin/factors'
+    | '/admin/tickers'
+    | '/api/logs'
+    | '/admin'
+    | '/api/trpc/$'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/about'
+    | '/admin/factors'
+    | '/admin/tickers'
+    | '/api/logs'
+    | '/admin/'
+    | '/api/trpc/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   ApiLogsRoute: typeof ApiLogsRoute
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
@@ -78,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -85,12 +152,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/api/logs': {
       id: '/api/logs'
       path: '/api/logs'
       fullPath: '/api/logs'
       preLoaderRoute: typeof ApiLogsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/tickers': {
+      id: '/admin/tickers'
+      path: '/tickers'
+      fullPath: '/admin/tickers'
+      preLoaderRoute: typeof AdminTickersRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/factors': {
+      id: '/admin/factors'
+      path: '/factors'
+      fullPath: '/admin/factors'
+      preLoaderRoute: typeof AdminFactorsRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
     '/api/trpc/$': {
       id: '/api/trpc/$'
@@ -102,8 +190,25 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteRouteChildren {
+  AdminFactorsRoute: typeof AdminFactorsRoute
+  AdminTickersRoute: typeof AdminTickersRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminFactorsRoute: AdminFactorsRoute,
+  AdminTickersRoute: AdminTickersRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
+  AdminRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRouteRoute: AdminRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   ApiLogsRoute: ApiLogsRoute,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,

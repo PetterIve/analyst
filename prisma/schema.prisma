@@ -7,8 +7,328 @@ datasource db {
   provider = "postgresql"
 }
 
-model Todo {
+enum Segment {
+  crude
+  product
+  mixed
+}
+
+enum NewsSourceKind {
+  rss
+  scraper
+}
+
+enum EventSourceKind {
+  news
+  x
+  manual
+}
+
+enum AlertDirection {
+  long
+  short
+}
+
+enum AlertState {
+  pending
+  delivered
+  held
+  cancelled
+}
+
+enum RatingKind {
+  instant_thumbs
+  five_day_followup @map("5d_followup")
+}
+
+enum RatingValue {
+  up
+  down
+  right
+  wrong
+  unsure
+}
+
+enum CronStatus {
+  ok
+  error
+}
+
+model Ticker {
   id        Int      @id @default(autoincrement())
-  title     String
-  createdAt DateTime @default(now())
+  symbol    String   @unique
+  exchange  String
+  segment   Segment
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  factorState        FactorState[]
+  factorStateHistory FactorStateHistory[]
+  alerts             Alert[]
+  pricesDaily        PriceDaily[]
+
+  @@map("tickers")
+}
+
+model NewsSource {
+  id              Int            @id @default(autoincrement())
+  name            String
+  url             String
+  rssUrl          String?        @map("rss_url")
+  kind            NewsSourceKind
+  pollIntervalSec Int            @map("poll_interval_sec")
+  active          Boolean        @default(true)
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  newsItems NewsItem[]
+
+  @@map("news_sources")
+}
+
+model NewsItem {
+  id          Int       @id @default(autoincrement())
+  sourceId    Int       @map("source_id")
+  url         String    @unique
+  title       String
+  bodyText    String?   @map("body_text")
+  publishedAt DateTime? @map("published_at")
+  fetchedAt   DateTime  @default(now()) @map("fetched_at")
+  contentHash String    @map("content_hash")
+  processedAt DateTime? @map("processed_at")
+
+  source         NewsSource      @relation(fields: [sourceId], references: [id])
+  alertSources   AlertSource[]
+  eventInstances EventInstance[]
+
+  @@index([publishedAt(sort: Desc)])
+  @@index([processedAt])
+  @@map("news_items")
+}
+
+model XAccount {
+  id            Int      @id @default(autoincrement())
+  handle        String   @unique
+  displayName   String?  @map("display_name")
+  followerCount Int?     @map("follower_count")
+  signalWeight  Float    @default(0.5) @map("signal_weight")
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  posts XPost[]
+
+  @@map("x_accounts")
+}
+
+model XPost {
+  id          Int       @id @default(autoincrement())
+  accountId   Int       @map("account_id")
+  postId      String    @unique @map("post_id")
+  text        String
+  postedAt    DateTime  @map("posted_at")
+  fetchedAt   DateTime  @default(now()) @map("fetched_at")
+  replyToId   String?   @map("reply_to_id")
+  processedAt DateTime? @map("processed_at")
+
+  account        XAccount        @relation(fields: [accountId], references: [id])
+  alertSources   AlertSource[]
+  eventInstances EventInstance[]
+
+  @@index([postedAt(sort: Desc)])
+  @@index([processedAt])
+  @@map("x_posts")
+}
+
+model EventClass {
+  id                  Int      @id @default(autoincrement())
+  slug                String   @unique
+  name                String
+  description         String?
+  defaultFactorDeltas Json     @map("default_factor_deltas")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  instances EventInstance[]
+
+  @@map("event_classes")
+}
+
+model EventInstance {
+  id            Int             @id @default(autoincrement())
+  eventClassId  Int             @map("event_class_id")
+  occurredAt    DateTime        @map("occurred_at")
+  description   String?
+  sourceKind    EventSourceKind @map("source_kind")
+  newsItemId    Int?            @map("news_item_id")
+  xPostId       Int?            @map("x_post_id")
+  tickerReturns Json            @map("ticker_returns")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  eventClass         EventClass           @relation(fields: [eventClassId], references: [id])
+  newsItem           NewsItem?            @relation(fields: [newsItemId], references: [id])
+  xPost              XPost?               @relation(fields: [xPostId], references: [id])
+  factorStateHistory FactorStateHistory[]
+
+  @@index([occurredAt(sort: Desc)])
+  @@map("event_instances")
+}
+
+model FactorDefinition {
+  id           Int      @id @default(autoincrement())
+  slug         String   @unique
+  name         String
+  description  String?
+  rangeMin     Float    @map("range_min")
+  rangeMax     Float    @map("range_max")
+  defaultValue Float    @map("default_value")
+  weight       Float
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  factorState        FactorState[]
+  factorStateHistory FactorStateHistory[]
+
+  @@map("factor_definitions")
+}
+
+model FactorState {
+  id        Int      @id @default(autoincrement())
+  tickerId  Int      @map("ticker_id")
+  factorId  Int      @map("factor_id")
+  value     Float
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  ticker Ticker           @relation(fields: [tickerId], references: [id])
+  factor FactorDefinition @relation(fields: [factorId], references: [id])
+
+  @@unique([tickerId, factorId])
+  @@map("factor_state")
+}
+
+model FactorStateHistory {
+  id              Int      @id @default(autoincrement())
+  tickerId        Int      @map("ticker_id")
+  factorId        Int      @map("factor_id")
+  oldValue        Float    @map("old_value")
+  newValue        Float    @map("new_value")
+  delta           Float
+  reason          String
+  eventInstanceId Int?     @map("event_instance_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  ticker        Ticker           @relation(fields: [tickerId], references: [id])
+  factor        FactorDefinition @relation(fields: [factorId], references: [id])
+  eventInstance EventInstance?   @relation(fields: [eventInstanceId], references: [id])
+
+  @@index([tickerId, factorId, createdAt])
+  @@map("factor_state_history")
+}
+
+model Alert {
+  id                   Int            @id @default(autoincrement())
+  tickerId             Int            @map("ticker_id")
+  direction            AlertDirection
+  entryPrice           Float          @map("entry_price")
+  thesis               String
+  topCatalyst          String         @map("top_catalyst")
+  expectedReturn5d     Float          @map("expected_return_5d")
+  hitRate              Float          @map("hit_rate")
+  nComparables         Int            @map("n_comparables")
+  invalidation         String
+  compositeScoreAtFire Float          @map("composite_score_at_fire")
+  state                AlertState     @default(pending)
+  firedAt              DateTime       @map("fired_at")
+  deliveredAt          DateTime?      @map("delivered_at")
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
+
+  ticker  Ticker        @relation(fields: [tickerId], references: [id])
+  sources AlertSource[]
+  outcome AlertOutcome?
+  ratings Rating[]
+
+  @@index([state, firedAt])
+  @@map("alerts")
+}
+
+model AlertSource {
+  id                 Int   @id @default(autoincrement())
+  alertId            Int   @map("alert_id")
+  newsItemId         Int?  @map("news_item_id")
+  xPostId            Int?  @map("x_post_id")
+  contributionWeight Float @map("contribution_weight")
+
+  alert    Alert     @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  newsItem NewsItem? @relation(fields: [newsItemId], references: [id])
+  xPost    XPost?    @relation(fields: [xPostId], references: [id])
+
+  @@index([alertId])
+  @@map("alert_sources")
+}
+
+model AlertOutcome {
+  id                Int      @id @default(autoincrement())
+  alertId           Int      @unique @map("alert_id")
+  price1d           Float?   @map("price_1d")
+  price5d           Float?   @map("price_5d")
+  price20d          Float?   @map("price_20d")
+  returnVsTicker1d  Float?   @map("return_vs_ticker_1d")
+  returnVsTicker5d  Float?   @map("return_vs_ticker_5d")
+  returnVsTicker20d Float?   @map("return_vs_ticker_20d")
+  returnVsSector1d  Float?   @map("return_vs_sector_1d")
+  returnVsSector5d  Float?   @map("return_vs_sector_5d")
+  returnVsSector20d Float?   @map("return_vs_sector_20d")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@map("alert_outcomes")
+}
+
+model Rating {
+  id         Int         @id @default(autoincrement())
+  alertId    Int         @map("alert_id")
+  userChatId String      @map("user_chat_id")
+  kind       RatingKind
+  value      RatingValue
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  alert Alert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@index([alertId])
+  @@map("ratings")
+}
+
+model PriceDaily {
+  id       Int      @id @default(autoincrement())
+  tickerId Int      @map("ticker_id")
+  date     DateTime @db.Date
+  open     Float
+  high     Float
+  low      Float
+  close    Float
+  adjClose Float    @map("adj_close")
+  volume   BigInt
+
+  ticker Ticker @relation(fields: [tickerId], references: [id])
+
+  @@unique([tickerId, date])
+  @@map("prices_daily")
+}
+
+model CronRun {
+  id         Int        @id @default(autoincrement())
+  jobName    String     @map("job_name")
+  startedAt  DateTime   @map("started_at")
+  finishedAt DateTime?  @map("finished_at")
+  status     CronStatus
+  errorMsg   String?    @map("error_msg")
+  metrics    Json?
+
+  @@index([jobName, startedAt(sort: Desc)])
+  @@map("cron_runs")
 }
