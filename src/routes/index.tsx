@@ -1,8 +1,21 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { logger as clientLogger } from '#/lib/logger.client'
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute('/')({
+  loader: async () => {
+    const { logger } = await import('#/lib/logger.server')
+    logger.info({ route: '/' }, 'index route loader fired')
+    return null
+  },
+  component: App,
+})
 
 function App() {
+  useEffect(() => {
+    clientLogger.info('index page mounted')
+  }, [])
+
   return (
     <main className="page-wrap px-4 pb-8 pt-14">
       <section className="island-shell rise-in relative overflow-hidden rounded-[2rem] px-6 py-10 sm:px-10 sm:py-14">
