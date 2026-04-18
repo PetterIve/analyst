@@ -36,14 +36,6 @@ function Landing() {
           <Link to="/admin/tickers" className="btn primary">
             Open admin
           </Link>
-          <a
-            className="btn"
-            href="https://github.com/PetterIve/analyst"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Repo
-          </a>
         </div>
       </div>
     </main>
