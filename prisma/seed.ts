@@ -1,6 +1,5 @@
-import { PrismaClient } from '../src/generated/prisma/client.js'
-
 import { PrismaPg } from '@prisma/adapter-pg'
+import { PrismaClient } from '../src/generated/prisma/client.js'
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
@@ -8,27 +7,39 @@ const adapter = new PrismaPg({
 
 const prisma = new PrismaClient({ adapter })
 
+async function seedTickers() {
+  // Populated in T03 — ticker universe definition.
+}
+
+async function seedNewsSources() {
+  // Populated in T04 — RSS source list.
+}
+
+async function seedXAccounts() {
+  // Populated in T05 — curated X account list.
+}
+
+async function seedEventClasses() {
+  // Populated in T08 — event catalog bootstrap.
+}
+
+async function seedFactorDefinitions() {
+  // Populated in T03 — factor taxonomy.
+}
+
 async function main() {
-  console.log('🌱 Seeding database...')
-
-  // Clear existing todos
-  await prisma.todo.deleteMany()
-
-  // Create example todos
-  const todos = await prisma.todo.createMany({
-    data: [
-      { title: 'Buy groceries' },
-      { title: 'Read a book' },
-      { title: 'Workout' },
-    ],
-  })
-
-  console.log(`✅ Created ${todos.count} todos`)
+  console.log('Seeding database...')
+  await seedTickers()
+  await seedNewsSources()
+  await seedXAccounts()
+  await seedEventClasses()
+  await seedFactorDefinitions()
+  console.log('Seed complete.')
 }
 
 main()
-  .catch((e) => {
-    console.error('❌ Error seeding database:', e)
+  .catch((error) => {
+    console.error('Seed failed:', error)
     process.exit(1)
   })
   .finally(async () => {
