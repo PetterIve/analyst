@@ -41,12 +41,13 @@ export async function backfillTicker(
     select: { date: true },
   })
 
-  const from = latest
-    ? addDays(latest.date, 1)
-    : subtractYears(now, yearsBack)
-  const to = addDays(startOfUtcDay(now), 1)
+  const { from, to, skipped } = computeBackfillRange({
+    latestDate: latest?.date ?? null,
+    now,
+    yearsBack,
+  })
 
-  if (from >= to) {
+  if (skipped) {
     return {
       symbol: ticker.symbol,
       tickerId,
@@ -124,6 +125,28 @@ export async function backfillAll(
     results.push(r)
   }
   return results
+}
+
+export interface ComputeBackfillRangeInput {
+  latestDate: Date | null
+  now: Date
+  yearsBack: number
+}
+
+export interface ComputeBackfillRangeResult {
+  from: Date
+  to: Date
+  skipped: boolean
+}
+
+export function computeBackfillRange({
+  latestDate,
+  now,
+  yearsBack,
+}: ComputeBackfillRangeInput): ComputeBackfillRangeResult {
+  const from = latestDate ? addDays(latestDate, 1) : subtractYears(now, yearsBack)
+  const to = addDays(startOfUtcDay(now), 1)
+  return { from, to, skipped: from >= to }
 }
 
 async function fetchWithRetry(

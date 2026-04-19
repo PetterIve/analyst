@@ -2,10 +2,13 @@ import { TRPCError, type TRPCRouterRecord } from '@trpc/server'
 import { z } from 'zod'
 import { prisma } from '#/server/db'
 import { backfillAll, backfillTicker } from '#/lib/ingest/prices/backfill'
+import {
+  type CoverageStatus,
+  deriveCoverageStatus,
+} from '#/lib/ingest/prices/coverage'
 import { publicProcedure } from '../init'
 
 const BENCHMARK_SYMBOL = 'XLE'
-const STALE_AFTER_DAYS = 5
 
 export interface CoverageRow {
   tickerId: number
@@ -17,7 +20,7 @@ export interface CoverageRow {
   firstDate: Date | null
   lastDate: Date | null
   lastCloseAgeDays: number | null
-  status: 'ok' | 'stale' | 'thin' | 'missing'
+  status: CoverageStatus
 }
 
 async function loadCoverage(): Promise<CoverageRow[]> {
@@ -31,18 +34,14 @@ async function loadCoverage(): Promise<CoverageRow[]> {
     _max: { date: true },
   })
   const statsById = new Map(stats.map((s) => [s.tickerId, s]))
-  const today = startOfUtcDay(new Date())
+  const now = new Date()
 
   return tickers.map<CoverageRow>((t) => {
     const s = statsById.get(t.id)
     const rowCount = s?._count._all ?? 0
     const firstDate = s?._min.date ?? null
     const lastDate = s?._max.date ?? null
-    const ageDays = lastDate ? diffDaysUtc(lastDate, today) : null
-    let status: CoverageRow['status'] = 'ok'
-    if (rowCount === 0) status = 'missing'
-    else if (rowCount < 1200) status = 'thin'
-    else if (ageDays !== null && ageDays > STALE_AFTER_DAYS) status = 'stale'
+    const { status, ageDays } = deriveCoverageStatus({ rowCount, lastDate, now })
     return {
       tickerId: t.id,
       symbol: t.symbol,
@@ -157,12 +156,3 @@ export const priceRouter = {
       return { results }
     }),
 } satisfies TRPCRouterRecord
-
-function startOfUtcDay(d: Date): Date {
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()))
-}
-
-function diffDaysUtc(a: Date, b: Date): number {
-  const ms = startOfUtcDay(b).getTime() - startOfUtcDay(a).getTime()
-  return Math.round(ms / (1000 * 60 * 60 * 24))
-}
