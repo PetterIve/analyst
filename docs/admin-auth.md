@@ -4,52 +4,49 @@ The tRPC admin mutations (`ticker.update`, `factor.update`, …) are gated by
 `adminProcedure` in `src/integrations/trpc/init.ts`. It checks the signed-in
 Clerk user's primary email against an `ADMIN_EMAILS` whitelist.
 
-## Server side
+## Wiring
 
-Env vars:
+- [`src/start.ts`](../src/start.ts) — registers `clerkMiddleware()` in
+  `requestMiddleware` so every request has Clerk's auth state available via
+  `auth()` from `@clerk/tanstack-react-start/server`.
+- [`src/integrations/trpc/context.ts`](../src/integrations/trpc/context.ts) —
+  tRPC context calls `auth()` (no args; reads from the middleware), then
+  looks up the user's primary email via `clerkClient()`.
+- [`src/integrations/trpc/init.ts`](../src/integrations/trpc/init.ts) —
+  `adminProcedure` enforces the whitelist.
+- [`src/integrations/clerk/TokenSync.tsx`](../src/integrations/clerk/TokenSync.tsx)
+  — renders once inside `<ClerkProvider>`, calls `useAuth()`, and writes the
+  current `getToken` into a singleton (`token-holder.ts`).
+- [`src/integrations/tanstack-query/root-provider.tsx`](../src/integrations/tanstack-query/root-provider.tsx)
+  — the tRPC `httpBatchStreamLink` reads from the same singleton and attaches
+  `Authorization: Bearer <jwt>` on every request.
 
-- `CLERK_SECRET_KEY` — Clerk backend secret.
-- `ADMIN_EMAILS` — comma-separated list, case-insensitive (e.g.
-  `me@example.com, ops@example.com`).
+No sniffing of `window.Clerk`, no duplicated auth logic server-side.
 
-Behavior:
+## Env vars
 
-- **Clerk not configured + `NODE_ENV !== 'production'`** — gate bypassed.
-  Local dev can hit mutations without sign-in. Matches how `VITE_CLERK_PUBLISHABLE_KEY` is optional in most starters.
-- **Clerk not configured + production** — every admin mutation returns
+- `CLERK_PUBLISHABLE_KEY` — injected into the page by the Clerk middleware.
+- `CLERK_SECRET_KEY` — backend-only; required for `auth()` / `clerkClient`.
+- `ADMIN_EMAILS` — comma-separated, case-insensitive list.
+
+## Gate behavior
+
+- **Clerk not configured + `NODE_ENV !== 'production'`** → bypassed. Local dev
+  hits mutations without sign-in.
+- **Clerk not configured + production** → every admin mutation returns
   `UNAUTHORIZED`. Fail-closed.
-- **Clerk configured but `ADMIN_EMAILS` empty + non-production** — bypassed.
-  Production — fail-closed.
-- **Clerk configured + whitelist set** — caller must be signed in AND have
-  a primary email in the list. Otherwise `UNAUTHORIZED`.
+- **Clerk configured + `ADMIN_EMAILS` empty + non-prod** → bypassed.
+- **Clerk configured + `ADMIN_EMAILS` empty + prod** → fail-closed.
+- **Clerk configured + whitelist populated** → caller must be signed in AND
+  have a primary email in the list. Otherwise `UNAUTHORIZED`.
 
-The gate lives in `src/integrations/trpc/init.ts`
-(`adminProcedure`). The Clerk session is verified in
-`src/integrations/trpc/context.ts` via `@clerk/backend`'s
-`authenticateRequest`, which supports both `Authorization: Bearer <jwt>` and
-the Clerk session cookie.
+Read-only queries (`ticker.list`, `factor.list`) remain public.
 
-Read-only queries (`ticker.list`, `factor.list`) remain public — they don't
-leak anything sensitive.
+## Client UX
 
-## Client side
+The tRPC client always attaches the current session JWT when one exists.
+Signed-out callers get no header, and the server gate decides. When an
+admin mutation is rejected, the sonner toast surfaces "UNAUTHORIZED".
 
-The tRPC client in `src/integrations/tanstack-query/root-provider.tsx`
-attaches `Authorization: Bearer <jwt>` on every request by calling
-`window.Clerk.session.getToken()`. If the user isn't signed in, no header is
-sent and the server gate decides.
-
-To unlock admin edits:
-
-1. Sign in via Clerk (the existing `<SignInButton />` in
-   `src/components/Header.tsx`, or a dedicated sign-in page).
-2. Ensure your email is in `ADMIN_EMAILS`.
-3. Reload — mutations start working. A forbidden user sees a toast with
-   "UNAUTHORIZED".
-
-## Why Clerk (not a shared secret)?
-
-A per-user gate gives us audit-friendly attribution (which admin changed
-which factor weight) for free, and removes the need to copy/paste a shared
-secret. Clerk was already wired for the `<SignInButton>` UI; the backend
-verification is a few extra lines.
+To unlock admin edits: sign in via the Clerk `<SignInButton>` (currently in
+`src/components/Header.tsx`) with an email in `ADMIN_EMAILS`.

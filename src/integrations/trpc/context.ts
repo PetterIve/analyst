@@ -1,43 +1,38 @@
-import { createClerkClient } from '@clerk/backend'
+import { auth, clerkClient } from '@clerk/tanstack-react-start/server'
 
-let clerk: ReturnType<typeof createClerkClient> | null = null
-
-function getClerk() {
-  if (clerk) return clerk
-  const secretKey = process.env.CLERK_SECRET_KEY
-  if (!secretKey) return null
-  clerk = createClerkClient({ secretKey })
-  return clerk
-}
-
-export async function createTRPCContext({ req }: { req: Request }) {
-  const client = getClerk()
-  if (!client) {
+export async function createTRPCContext() {
+  const clerkConfigured = Boolean(process.env.CLERK_SECRET_KEY)
+  if (!clerkConfigured) {
     return { userId: null, userEmail: null, clerkConfigured: false as const }
   }
 
-  const requestState = await client.authenticateRequest(req)
-  if (!requestState.isAuthenticated) {
+  let state: Awaited<ReturnType<typeof auth>>
+  try {
+    state = await auth()
+  } catch {
     return { userId: null, userEmail: null, clerkConfigured: true as const }
   }
 
-  const { userId } = requestState.toAuth()
-  if (!userId) {
+  if (!state.isAuthenticated || !state.userId) {
     return { userId: null, userEmail: null, clerkConfigured: true as const }
   }
 
   try {
-    const user = await client.users.getUser(userId)
-    const primaryEmail = user.emailAddresses.find(
-      (e) => e.id === user.primaryEmailAddressId,
-    )?.emailAddress ?? user.emailAddresses[0]?.emailAddress ?? null
+    const user = await clerkClient().users.getUser(state.userId)
+    const primaryEmail =
+      user.emailAddresses.find((e) => e.id === user.primaryEmailAddressId)
+        ?.emailAddress ?? user.emailAddresses[0]?.emailAddress ?? null
     return {
-      userId,
+      userId: state.userId,
       userEmail: primaryEmail,
       clerkConfigured: true as const,
     }
   } catch {
-    return { userId, userEmail: null, clerkConfigured: true as const }
+    return {
+      userId: state.userId,
+      userEmail: null,
+      clerkConfigured: true as const,
+    }
   }
 }
 

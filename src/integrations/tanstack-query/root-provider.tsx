@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient } from '@tanstack/react-query'
 import superjson from 'superjson'
 import { createTRPCClient, httpBatchStreamLink } from '@trpc/client'
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query'
 
 import type { TRPCRouter } from '#/integrations/trpc/router'
 import { TRPCProvider } from '#/integrations/trpc/react'
+import { getClerkTokenSafe } from '#/integrations/clerk/token-holder'
 
 function getUrl() {
   const base = (() => {
@@ -15,23 +16,13 @@ function getUrl() {
   return `${base}/api/trpc`
 }
 
-async function getClerkToken(): Promise<string | null> {
-  if (typeof window === 'undefined') return null
-  const clerk = (window as unknown as { Clerk?: { session?: { getToken: () => Promise<string | null> } } }).Clerk
-  try {
-    return (await clerk?.session?.getToken()) ?? null
-  } catch {
-    return null
-  }
-}
-
 export const trpcClient = createTRPCClient<TRPCRouter>({
   links: [
     httpBatchStreamLink({
       transformer: superjson,
       url: getUrl(),
       async headers() {
-        const token = await getClerkToken()
+        const token = await getClerkTokenSafe()
         return token ? { Authorization: `Bearer ${token}` } : {}
       },
     }),
