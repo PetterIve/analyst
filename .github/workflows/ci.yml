@@ -21,7 +21,13 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Generate Prisma client
+        # Tests don't connect, but `prisma generate` reads env via prisma.config,
+        # so give it a dummy URL so resolution succeeds.
+        env:
+          DATABASE_URL: postgresql://analyst:analyst@localhost:5434/analyst
         run: npx prisma generate
 
       - name: Run tests
+        env:
+          DATABASE_URL: postgresql://analyst:analyst@localhost:5434/analyst
         run: npm test
