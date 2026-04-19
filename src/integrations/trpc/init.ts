@@ -19,38 +19,39 @@ function parseAdminEmails(): ReadonlyArray<string> {
 
 /**
  * Admin-only procedure. Requires a signed-in Clerk user whose primary email
- * is in the `ADMIN_EMAILS` whitelist (comma-separated).
+ * is in the `ADMIN_EMAILS` whitelist and has `email_verified: true`.
  *
- * Non-production with Clerk not configured: bypassed (dev convenience).
- * Production with Clerk not configured OR ADMIN_EMAILS unset: fails closed.
+ * The gate is fail-closed everywhere unless `ADMIN_AUTH_BYPASS=true` is set
+ * — intentionally not keyed on `NODE_ENV` so staging / preview deploys
+ * that don't mark themselves as production don't accidentally go open.
+ * Set the bypass only in local `.env.local`, never in shared/remote envs.
  */
 export const adminProcedure = t.procedure.use(({ ctx, next }) => {
-  const isProd = process.env.NODE_ENV === 'production'
+  const bypass = process.env.ADMIN_AUTH_BYPASS === 'true'
 
   if (!ctx.clerkConfigured) {
-    if (isProd) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'Clerk is not configured on the server.',
-      })
-    }
-    return next()
+    if (bypass) return next()
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'Clerk is not configured on the server.',
+    })
   }
 
   const whitelist = parseAdminEmails()
   if (whitelist.length === 0) {
-    if (isProd) {
-      throw new TRPCError({
-        code: 'UNAUTHORIZED',
-        message: 'ADMIN_EMAILS whitelist is empty.',
-      })
-    }
-    return next()
+    if (bypass) return next()
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'ADMIN_EMAILS whitelist is empty.',
+    })
   }
 
   const email = ctx.userEmail?.toLowerCase() ?? null
   if (!email || !whitelist.includes(email)) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' })
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'Not authorized for admin mutations.',
+    })
   }
   if (!ctx.userEmailVerified) {
     throw new TRPCError({

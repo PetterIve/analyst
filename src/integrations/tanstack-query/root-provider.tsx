@@ -4,9 +4,9 @@ import superjson from 'superjson'
 import { createTRPCClient, httpBatchStreamLink } from '@trpc/client'
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query'
 
+import { getToken } from '@clerk/tanstack-react-start'
 import type { TRPCRouter } from '#/integrations/trpc/router'
 import { TRPCProvider } from '#/integrations/trpc/react'
-import { getClerkTokenSafe } from '#/integrations/clerk/token-holder'
 
 function getUrl() {
   const base = (() => {
@@ -22,8 +22,13 @@ export const trpcClient = createTRPCClient<TRPCRouter>({
       transformer: superjson,
       url: getUrl(),
       async headers() {
-        const token = await getClerkTokenSafe()
-        return token ? { Authorization: `Bearer ${token}` } : {}
+        if (typeof window === 'undefined') return {}
+        try {
+          const token = await getToken()
+          return token ? { Authorization: `Bearer ${token}` } : {}
+        } catch {
+          return {}
+        }
       },
     }),
   ],

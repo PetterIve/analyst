@@ -15,14 +15,13 @@ Clerk user's primary email against an `ADMIN_EMAILS` whitelist.
   to `clerkClient().users.getUser()` only if the claim is missing.
 - [`src/integrations/trpc/init.ts`](../src/integrations/trpc/init.ts) —
   `adminProcedure` enforces the whitelist.
-- [`src/integrations/clerk/TokenSync.tsx`](../src/integrations/clerk/TokenSync.tsx)
-  — renders once inside `<ClerkProvider>`, calls `useAuth()`, and writes the
-  current `getToken` into a singleton (`token-holder.ts`).
 - [`src/integrations/tanstack-query/root-provider.tsx`](../src/integrations/tanstack-query/root-provider.tsx)
-  — the tRPC `httpBatchStreamLink` reads from the same singleton and attaches
-  `Authorization: Bearer <jwt>` on every request.
-
-No sniffing of `window.Clerk`, no duplicated auth logic server-side.
+  — the tRPC `httpBatchStreamLink` calls `getToken()` from
+  `@clerk/tanstack-react-start` on every request and attaches
+  `Authorization: Bearer <jwt>`. The helper waits for Clerk to initialize
+  and is the SDK's supported entry point for "API interceptors / data
+  fetching layers", so no React bridge or `window.Clerk` sniffing is
+  needed.
 
 ## One-time Clerk Dashboard setup
 
@@ -57,16 +56,25 @@ status from there.
 
 ## Gate behavior
 
-- **Clerk not configured + `NODE_ENV !== 'production'`** → bypassed. Local dev
-  hits mutations without sign-in.
-- **Clerk not configured + production** → every admin mutation returns
-  `UNAUTHORIZED`. Fail-closed.
-- **Clerk configured + `ADMIN_EMAILS` empty + non-prod** → bypassed.
-- **Clerk configured + `ADMIN_EMAILS` empty + prod** → fail-closed.
-- **Clerk configured + whitelist populated** → caller must be signed in AND
-  have a primary email in the list. Otherwise `UNAUTHORIZED`.
+The gate is **fail-closed by default in every environment**. A dedicated
+`ADMIN_AUTH_BYPASS=true` env var is the only thing that opens it up —
+intentionally not keyed on `NODE_ENV` so that staging or preview deploys
+that don't mark themselves as production can't accidentally go open.
+
+- **Clerk not configured + bypass unset** → `UNAUTHORIZED`.
+- **Clerk not configured + `ADMIN_AUTH_BYPASS=true`** → bypassed.
+- **Clerk configured + whitelist empty + bypass unset** → `UNAUTHORIZED`.
+- **Clerk configured + whitelist empty + bypass=true** → bypassed.
+- **Clerk configured + whitelist populated** → caller must be signed in
+  AND have a primary email in the list AND `email_verified === true`.
+  `ADMIN_AUTH_BYPASS` is irrelevant at this point — the whitelist is
+  enforced.
 
 Read-only queries (`ticker.list`, `factor.list`) remain public.
+
+`ADMIN_AUTH_BYPASS` is meant for local developer `.env.local` only. Do not
+set it in a deployed environment — no feature relies on it being on in
+prod, and leaving it on defeats the entire gate.
 
 ## Test identity for agents (dev only)
 

@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { ClerkProvider } from '@clerk/tanstack-react-start'
-import { TokenSync } from './TokenSync'
 
 const publishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY as
   | string
@@ -12,14 +11,12 @@ export default function AppClerkProvider({
   children: ReactNode
 }) {
   if (!publishableKey) {
-    // Clerk is not configured — skip both the provider and the token
-    // synchroniser. Admin mutations run in their dev-bypass path so local
-    // development still works without Clerk.
+    // Clerk is not configured — skip the provider. Admin mutations fall
+    // through to the fail-closed / explicit-bypass path in adminProcedure.
     return <>{children}</>
   }
   return (
     <ClerkProvider publishableKey={publishableKey} afterSignOutUrl="/">
-      <TokenSync />
       {children}
     </ClerkProvider>
   )
