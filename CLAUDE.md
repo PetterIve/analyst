@@ -45,6 +45,34 @@ USE_NEON=1 npm run dev
 ```
 `vite-plugin-neon-new` provisions a Neon branch, seeds it from `db/init.sql`, and **rewrites `DATABASE_URL` in `.env.local`** — restore the local URL when switching back.
 
+## Telegram bot
+
+Alert delivery runs over a grammy bot reached via webhook. Setup is
+one-time per environment:
+
+1. **Create the bot.** Talk to [@BotFather](https://t.me/BotFather), run
+   `/newbot`, copy the token into `TELEGRAM_BOT_TOKEN`.
+2. **Pick a webhook secret.** Generate a random string and set both
+   `TELEGRAM_WEBHOOK_SECRET` here and (step 3) with Telegram.
+3. **Register the webhook.** After deploying so `PUBLIC_APP_URL` is
+   reachable, POST to `/api/telegram/register` (protected by `CRON_SECRET`
+   like the other admin endpoints):
+   ```bash
+   curl -X POST -H "Authorization: Bearer $CRON_SECRET" \
+     "$PUBLIC_APP_URL/api/telegram/register"
+   ```
+   The route reads `PUBLIC_APP_URL` + `TELEGRAM_WEBHOOK_SECRET` and wires
+   both with Telegram. `GET` returns the current webhook info.
+4. **Subscribe.** From Telegram, `/start` the bot — it inserts a
+   `subscribers` row and alerts fan out to every `active: true` row.
+
+`/mute` pauses a chat without losing the subscription; `/unmute` resumes.
+`/help` lists commands.
+
+Rating handling (`rate:{alertId}:{up|down}` callback payloads) logs today
+and will persist to the `ratings` table once T14 lands — see
+`src/server/telegram/callbacks.ts` for the swap-in point.
+
 ## Cron routes
 
 Every `src/routes/api.cron.*.tsx` handler must log generously via
