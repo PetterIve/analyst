@@ -1,13 +1,18 @@
 # Telegram bot
 
-Alert delivery runs over a grammy bot reached via webhook. Entry points:
+Alert delivery runs over a grammy bot reached via webhook.
 
-- `src/server/telegram/bot.ts` — singleton, lazy-init
-- `src/server/telegram/commands.ts` — `/start`, `/help`, `/mute`, `/unmute`, `/performance`
-- `src/server/telegram/callbacks.ts` — `rate:*` dispatcher (T14 swaps in persistence)
-- `src/server/telegram/format-alert.ts` + `send-alert.ts` — message rendering + fanout
-- `src/routes/api.telegram.webhook.tsx` — inbound webhook (Telegram → bot)
-- `src/routes/api.telegram.register.tsx` — admin op to register/inspect the webhook
+In this module:
+
+- `bot.ts` — singleton, lazy-init
+- `commands.ts` — `/start`, `/help`, `/mute`, `/unmute`, `/performance`
+- `callbacks.ts` — `rate:*` dispatcher (T14 swaps in persistence via `setRateHandler`)
+- `format-alert.ts` + `send-alert.ts` — message rendering + fanout
+
+HTTP entry points (in `src/routes/`):
+
+- `api.telegram.webhook.tsx` — inbound webhook (Telegram → bot)
+- `api.telegram.register.tsx` — admin op to register/inspect the webhook
 
 ## Setup (one-time per environment)
 
