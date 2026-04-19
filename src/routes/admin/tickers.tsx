@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, createFileRoute } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
@@ -17,10 +17,25 @@ type TickerRow = {
   active: boolean
 }
 
+type CoverageStatus = 'ok' | 'stale' | 'thin' | 'missing'
+
+interface TickerCoverage {
+  rowCount: number
+  lastDate: Date | null
+  status: CoverageStatus
+}
+
 function TickersPage() {
   const trpc = useTRPC()
   const queryClient = useQueryClient()
   const { data: tickers, isLoading } = useQuery(trpc.ticker.list.queryOptions())
+  const { data: coverage } = useQuery(trpc.price.coverage.queryOptions())
+  const coverageBySymbol = new Map(
+    (coverage ?? []).map((c) => [c.symbol, c]),
+  )
+  const [backfillingSymbol, setBackfillingSymbol] = useState<string | null>(
+    null,
+  )
 
   const updateMutation = useMutation(
     trpc.ticker.update.mutationOptions({
@@ -28,6 +43,22 @@ function TickersPage() {
         queryClient.invalidateQueries({ queryKey: trpc.ticker.list.queryKey() })
       },
       onError: (error) => toast.error(`Update failed: ${error.message}`),
+    }),
+  )
+
+  const backfillMutation = useMutation(
+    trpc.price.runBackfill.mutationOptions({
+      onSuccess: (res) => {
+        const inserted = res.results.reduce((n, r) => n + r.rowsInserted, 0)
+        toast.success(
+          `Backfilled ${res.results.length} ticker · ${inserted} rows`,
+        )
+        queryClient.invalidateQueries({
+          queryKey: trpc.price.coverage.queryKey(),
+        })
+      },
+      onError: (err) => toast.error(`Backfill failed: ${err.message}`),
+      onSettled: () => setBackfillingSymbol(null),
     }),
   )
 
@@ -72,6 +103,7 @@ function TickersPage() {
                 <th style={{ width: 110 }}>Exchange</th>
                 <th style={{ width: 110 }}>Segment</th>
                 <th>Name</th>
+                <th style={{ width: 200 }}>Prices</th>
                 <th style={{ width: 110 }}>Active</th>
               </tr>
             </thead>
@@ -80,9 +112,16 @@ function TickersPage() {
                 <Row
                   key={t.id}
                   ticker={t as TickerRow}
+                  coverage={coverageBySymbol.get(t.symbol)}
+                  backfilling={backfillingSymbol === t.symbol}
+                  disableBackfill={backfillingSymbol !== null}
                   onUpdate={(patch) =>
                     updateMutation.mutate({ id: t.id, ...patch })
                   }
+                  onBackfill={() => {
+                    setBackfillingSymbol(t.symbol)
+                    backfillMutation.mutate({ symbol: t.symbol })
+                  }}
                 />
               ))}
             </tbody>
@@ -95,10 +134,18 @@ function TickersPage() {
 
 function Row({
   ticker,
+  coverage,
+  backfilling,
+  disableBackfill,
   onUpdate,
+  onBackfill,
 }: {
   ticker: TickerRow
+  coverage: TickerCoverage | undefined
+  backfilling: boolean
+  disableBackfill: boolean
   onUpdate: (patch: { name?: string; active?: boolean }) => void
+  onBackfill: () => void
 }) {
   const [draft, setDraft] = useState(ticker.name)
   const commit = () => {
@@ -128,6 +175,19 @@ function Row({
         />
       </td>
       <td>
+        <div className="row-d" style={{ gap: 8 }}>
+          <CoverageCell coverage={coverage} symbol={ticker.symbol} />
+          <button
+            type="button"
+            className="btn sm"
+            disabled={disableBackfill}
+            onClick={onBackfill}
+          >
+            {backfilling ? '…' : 'Backfill'}
+          </button>
+        </div>
+      </td>
+      <td>
         <button
           type="button"
           className={`btn sm${ticker.active ? ' primary' : ''}`}
@@ -137,5 +197,37 @@ function Row({
         </button>
       </td>
     </tr>
+  )
+}
+
+function CoverageCell({
+  coverage,
+  symbol,
+}: {
+  coverage: TickerCoverage | undefined
+  symbol: string
+}) {
+  if (!coverage) {
+    return <span className="label-xs">—</span>
+  }
+  const tone =
+    coverage.status === 'ok'
+      ? 'ok'
+      : coverage.status === 'missing'
+        ? 'neg'
+        : 'warn'
+  const label = coverage.lastDate
+    ? `${coverage.rowCount} · ${coverage.lastDate.toISOString().slice(0, 10)}`
+    : `${coverage.rowCount} rows`
+  return (
+    <Link
+      to="/admin/prices/$symbol"
+      params={{ symbol }}
+      style={{ textDecoration: 'none' }}
+    >
+      <span className={`pill ${tone}`}>
+        <span className="dot" /> {label}
+      </span>
+    </Link>
   )
 }

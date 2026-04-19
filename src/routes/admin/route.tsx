@@ -26,6 +26,7 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     entries: [
       { label: 'Alert feed', to: '/admin/feed', icon: 'bell', enabled: false, task: 'T11' },
       { label: 'Tickers', to: '/admin/tickers', icon: 'ticker', enabled: true },
+      { label: 'Prices', to: '/admin/prices', icon: 'chart', enabled: true },
       { label: 'Event catalog', to: '/admin/events', icon: 'layers', enabled: false, task: 'T08' },
       { label: 'Performance', to: '/admin/perf', icon: 'chart', enabled: false, task: 'T15' },
     ],
@@ -45,6 +46,7 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
 
 const CRUMBS: Record<string, ReadonlyArray<string>> = {
   '/admin/tickers': ['Analyst', 'Tickers'],
+  '/admin/prices': ['Analyst', 'Prices'],
   '/admin/factors': ['Admin', 'Factors'],
 }
 
@@ -133,7 +135,9 @@ function Sidebar({ pathname }: { pathname: string }) {
       <div className="brand">
         <div className="brand-mark">A</div>
         <div className="brand-name">Analyst</div>
-        <span className="brand-sub">v0.4</span>
+        <span className="brand-sub">
+          {import.meta.env.VITE_WT_LABEL ?? 'v0.4'}
+        </span>
       </div>
 
       {NAV_GROUPS.map((group) => (

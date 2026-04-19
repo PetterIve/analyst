@@ -16,7 +16,10 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ApiLogsRouteImport } from './routes/api.logs'
 import { Route as AdminTickersRouteImport } from './routes/admin/tickers'
 import { Route as AdminFactorsRouteImport } from './routes/admin/factors'
+import { Route as AdminPricesIndexRouteImport } from './routes/admin/prices/index'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
+import { Route as ApiCronIngestPricesRouteImport } from './routes/api.cron.ingest-prices'
+import { Route as AdminPricesSymbolRouteImport } from './routes/admin/prices/$symbol'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -53,10 +56,25 @@ const AdminFactorsRoute = AdminFactorsRouteImport.update({
   path: '/factors',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminPricesIndexRoute = AdminPricesIndexRouteImport.update({
+  id: '/prices/',
+  path: '/prices/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
   id: '/api/trpc/$',
   path: '/api/trpc/$',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronIngestPricesRoute = ApiCronIngestPricesRouteImport.update({
+  id: '/api/cron/ingest-prices',
+  path: '/api/cron/ingest-prices',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPricesSymbolRoute = AdminPricesSymbolRouteImport.update({
+  id: '/prices/$symbol',
+  path: '/prices/$symbol',
+  getParentRoute: () => AdminRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -67,7 +85,10 @@ export interface FileRoutesByFullPath {
   '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
+  '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
+  '/admin/prices/': typeof AdminPricesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -76,7 +97,10 @@ export interface FileRoutesByTo {
   '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
+  '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
+  '/admin/prices': typeof AdminPricesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -87,7 +111,10 @@ export interface FileRoutesById {
   '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
+  '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
+  '/admin/prices/': typeof AdminPricesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -99,7 +126,10 @@ export interface FileRouteTypes {
     | '/admin/tickers'
     | '/api/logs'
     | '/admin/'
+    | '/admin/prices/$symbol'
+    | '/api/cron/ingest-prices'
     | '/api/trpc/$'
+    | '/admin/prices/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -108,7 +138,10 @@ export interface FileRouteTypes {
     | '/admin/tickers'
     | '/api/logs'
     | '/admin'
+    | '/admin/prices/$symbol'
+    | '/api/cron/ingest-prices'
     | '/api/trpc/$'
+    | '/admin/prices'
   id:
     | '__root__'
     | '/'
@@ -118,7 +151,10 @@ export interface FileRouteTypes {
     | '/admin/tickers'
     | '/api/logs'
     | '/admin/'
+    | '/admin/prices/$symbol'
+    | '/api/cron/ingest-prices'
     | '/api/trpc/$'
+    | '/admin/prices/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -126,6 +162,7 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   ApiLogsRoute: typeof ApiLogsRoute
+  ApiCronIngestPricesRoute: typeof ApiCronIngestPricesRoute
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
 }
 
@@ -180,12 +217,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminFactorsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/prices/': {
+      id: '/admin/prices/'
+      path: '/prices'
+      fullPath: '/admin/prices/'
+      preLoaderRoute: typeof AdminPricesIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/api/trpc/$': {
       id: '/api/trpc/$'
       path: '/api/trpc/$'
       fullPath: '/api/trpc/$'
       preLoaderRoute: typeof ApiTrpcSplatRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/ingest-prices': {
+      id: '/api/cron/ingest-prices'
+      path: '/api/cron/ingest-prices'
+      fullPath: '/api/cron/ingest-prices'
+      preLoaderRoute: typeof ApiCronIngestPricesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/prices/$symbol': {
+      id: '/admin/prices/$symbol'
+      path: '/prices/$symbol'
+      fullPath: '/admin/prices/$symbol'
+      preLoaderRoute: typeof AdminPricesSymbolRouteImport
+      parentRoute: typeof AdminRouteRoute
     }
   }
 }
@@ -194,12 +252,16 @@ interface AdminRouteRouteChildren {
   AdminFactorsRoute: typeof AdminFactorsRoute
   AdminTickersRoute: typeof AdminTickersRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminPricesSymbolRoute: typeof AdminPricesSymbolRoute
+  AdminPricesIndexRoute: typeof AdminPricesIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminFactorsRoute: AdminFactorsRoute,
   AdminTickersRoute: AdminTickersRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminPricesSymbolRoute: AdminPricesSymbolRoute,
+  AdminPricesIndexRoute: AdminPricesIndexRoute,
 }
 
 const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
@@ -211,6 +273,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   ApiLogsRoute: ApiLogsRoute,
+  ApiCronIngestPricesRoute: ApiCronIngestPricesRoute,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,
 }
 export const routeTree = rootRouteImport

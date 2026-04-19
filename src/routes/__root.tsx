@@ -25,6 +25,9 @@ interface MyRouterContext {
 
 const THEME_INIT_SCRIPT = `(function(){try{var root=document.documentElement;var t=window.localStorage.getItem('an_theme');if(t!=='quant'&&t!=='terminal'&&t!=='research')t='quant';root.setAttribute('data-theme',t);var d=window.localStorage.getItem('an_density');if(d!=='comfortable'&&d!=='compact')d='comfortable';root.setAttribute('data-density',d);}catch(e){}})();`
 
+const WT_LABEL = import.meta.env.VITE_WT_LABEL as string | undefined
+const PAGE_TITLE = WT_LABEL ? `Analyst — ${WT_LABEL}` : 'Analyst'
+
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
     meta: [
@@ -36,7 +39,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Analyst · Tanker Equity Research',
+        title: PAGE_TITLE,
       },
     ],
     links: [
