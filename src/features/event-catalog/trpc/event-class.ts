@@ -1,7 +1,7 @@
 import { TRPCError, type TRPCRouterRecord } from '@trpc/server'
 import { z } from 'zod'
 import { prisma } from '#/server/db'
-import { publicProcedure } from '#/integrations/trpc/init'
+import { adminProcedure, publicProcedure } from '#/integrations/trpc/init'
 import { recomputeAllEventReturns } from '../lib/compute-returns'
 import { eventClassStats, parseTickerReturns } from '../lib/stats'
 
@@ -74,8 +74,7 @@ export const eventClassRouter = {
       }
     }),
 
-  // TODO(auth): Tighten to adminProcedure once Clerk is wired in dev.
-  recomputeReturns: publicProcedure
+  recomputeReturns: adminProcedure
     .input(z.object({ slug: z.string().min(1).max(100).optional() }))
     .mutation(async ({ input }) => {
       let eventClassId: number | undefined

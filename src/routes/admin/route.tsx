@@ -116,9 +116,18 @@ function SignInScreen() {
   )
 }
 
+function deriveCrumbs(pathname: string): ReadonlyArray<string> {
+  if (CRUMBS[pathname]) return CRUMBS[pathname]
+  // Drill-down routes get the parent crumb plus a generic leaf so users still
+  // see where they are without registering every dynamic path.
+  if (pathname.startsWith('/admin/events/')) return ['Analyst', 'Event catalog', '…']
+  if (pathname.startsWith('/admin/prices/')) return ['Analyst', 'Prices', '…']
+  return ['Analyst']
+}
+
 function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const crumbs = CRUMBS[pathname] ?? ['Analyst']
+  const crumbs = deriveCrumbs(pathname)
 
   return (
     <div className="app">

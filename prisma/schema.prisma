@@ -172,8 +172,9 @@ model EventInstance {
   /// Ticker symbols whose `tickerReturns` are tracked for this instance.
   /// Stored as a JSON array of strings so the original "what tickers did the
   /// operator say were affected?" set is preserved even if a ticker later
-  /// gains/loses price data.
-  affectedSymbols Json          @map("affected_symbols")
+  /// gains/loses price data. Defaults to `[]` so adding the column to an
+  /// existing table is safe; new rows always set it explicitly.
+  affectedSymbols Json          @default("[]") @map("affected_symbols")
   tickerReturns Json            @map("ticker_returns")
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @updatedAt @map("updated_at")

@@ -11,6 +11,12 @@ export type TickerReturnsMap = Record<string, TickerReturns>
 const FORWARD_DAYS = 20
 const ANCHOR_PLUS_FORWARD = FORWARD_DAYS + 1 // anchor row + 20 forward trading days
 
+// Calendar-day window passed to the price query. Must comfortably cover
+// `ANCHOR_PLUS_FORWARD` trading days (~30 with weekends/holidays); 60 leaves
+// headroom for long holiday stretches (Christmas–New Year, Easter clusters).
+// Trimmed back to `ANCHOR_PLUS_FORWARD` per ticker after the JS-side group.
+const FORWARD_CALENDAR_DAYS = 60
+
 /**
  * Pure horizon arithmetic over an ordered series of `adjClose` values where
  * index 0 is the anchor (first trading day at-or-after the event) and index
@@ -58,23 +64,42 @@ export async function computeEventReturns(
   })
 
   const result: TickerReturnsMap = {}
-  for (const ticker of tickers) {
-    const rows = await prisma.priceDaily.findMany({
-      where: { tickerId: ticker.id, date: { gte: occurredAt } },
-      orderBy: { date: 'asc' },
-      take: ANCHOR_PLUS_FORWARD,
-      select: { adjClose: true },
-    })
-
-    result[ticker.symbol] = returnsFromAdjCloses(rows.map((r) => r.adjClose))
-  }
-
   // Symbols with no Ticker row at all (typo in seed) get explicit nulls so the
   // caller can surface "unknown ticker" rather than silently dropping it.
   for (const symbol of symbols) {
-    if (!(symbol in result)) {
-      result[symbol] = { d1: null, d5: null, d20: null }
-    }
+    result[symbol] = { d1: null, d5: null, d20: null }
+  }
+
+  if (tickers.length === 0) return result
+
+  const horizonEnd = new Date(occurredAt)
+  horizonEnd.setUTCDate(horizonEnd.getUTCDate() + FORWARD_CALENDAR_DAYS)
+
+  // One query for all tickers in the date range — avoids the N×M round-trip
+  // explosion `recomputeAllEventReturns` would otherwise produce (instances ×
+  // tickers). Group + slice per ticker happens in JS.
+  const rows = await prisma.priceDaily.findMany({
+    where: {
+      tickerId: { in: tickers.map((t) => t.id) },
+      date: { gte: occurredAt, lte: horizonEnd },
+    },
+    orderBy: [{ tickerId: 'asc' }, { date: 'asc' }],
+    select: { tickerId: true, adjClose: true },
+  })
+
+  const closesByTicker = new Map<number, number[]>()
+  for (const row of rows) {
+    const arr = closesByTicker.get(row.tickerId) ?? []
+    // Trim to the trading-day window we actually need; surplus rows from the
+    // wider calendar query are dropped here so `returnsFromAdjCloses` reads
+    // the correct offsets.
+    if (arr.length < ANCHOR_PLUS_FORWARD) arr.push(row.adjClose)
+    closesByTicker.set(row.tickerId, arr)
+  }
+
+  for (const ticker of tickers) {
+    const closes = closesByTicker.get(ticker.id) ?? []
+    result[ticker.symbol] = returnsFromAdjCloses(closes)
   }
 
   return result

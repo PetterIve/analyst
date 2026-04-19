@@ -185,7 +185,7 @@ export function DrillDownPage({ slug }: { slug: string }) {
                     <a
                       href={inst.sourceUrl}
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       className="label-xs"
                       style={{ color: 'var(--accent)' }}
                     >

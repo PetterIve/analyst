@@ -1,7 +1,7 @@
 import { TRPCError, type TRPCRouterRecord } from '@trpc/server'
 import { z } from 'zod'
 import { prisma } from '#/server/db'
-import { publicProcedure } from '#/integrations/trpc/init'
+import { adminProcedure, publicProcedure } from '#/integrations/trpc/init'
 import { computeEventReturns } from '../lib/compute-returns'
 
 const symbolSchema = z.string().min(1).max(20)
@@ -40,8 +40,7 @@ export const eventInstanceRouter = {
       }))
     }),
 
-  // TODO(auth): Tighten to adminProcedure once Clerk is wired in dev.
-  create: publicProcedure
+  create: adminProcedure
     .input(
       z.object({
         classSlug: z.string().min(1).max(100),
