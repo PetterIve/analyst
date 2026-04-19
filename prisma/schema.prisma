@@ -334,3 +334,18 @@ model CronRun {
   @@index([jobName, startedAt(sort: Desc)])
   @@map("cron_runs")
 }
+
+// Telegram chat that has /start'd the bot. Alerts fan out to every
+// `active: true` subscriber. Ratings live in the `ratings` table and key
+// off `userChatId` (already a string there) — no FK here because the
+// chat may have unsubscribed before a rating lands.
+model Subscriber {
+  id        Int      @id @default(autoincrement())
+  chatId    String   @unique @map("chat_id")
+  username  String?
+  active    Boolean  @default(true)
+  joinedAt  DateTime @default(now()) @map("joined_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("subscribers")
+}

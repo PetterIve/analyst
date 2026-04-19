@@ -45,6 +45,12 @@ USE_NEON=1 npm run dev
 ```
 `vite-plugin-neon-new` provisions a Neon branch, seeds it from `db/init.sql`, and **rewrites `DATABASE_URL` in `.env.local`** — restore the local URL when switching back.
 
+## Telegram bot
+
+Alert delivery runs over a grammy bot. Setup, commands, local-testing,
+and the T14 rating hand-off are documented in
+[`src/features/telegram/README.md`](./src/features/telegram/README.md).
+
 ## Cron routes
 
 Every `src/routes/api.cron.*.tsx` handler must log generously via
