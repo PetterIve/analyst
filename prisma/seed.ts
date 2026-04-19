@@ -4,9 +4,10 @@ import { tickerSeeds } from '../src/server/seed/tickers.js'
 import { factorSeeds } from '../src/server/seed/factors.js'
 import { factorInitialByTicker } from '../src/server/seed/factor-initial-state.js'
 import { newsSourceSeeds } from '../src/server/seed/news-sources.js'
-import { eventClassSeeds } from '../src/server/seed/event-classes.js'
-import { eventInstanceSeeds } from '../src/server/seed/event-instances.js'
-import { computeEventReturns } from '../src/lib/events/compute-returns.js'
+import {
+  applyEventClassSeeds,
+  applyEventInstanceSeeds,
+} from '../src/features/event-catalog/index.js'
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
@@ -110,77 +111,15 @@ async function seedXAccounts() {
 }
 
 async function seedEventClasses() {
-  let created = 0
-  for (const cls of eventClassSeeds) {
-    const existing = await prisma.eventClass.findUnique({
-      where: { slug: cls.slug },
-      select: { id: true },
-    })
-    if (existing) continue
-    await prisma.eventClass.create({
-      data: {
-        slug: cls.slug,
-        name: cls.name,
-        description: cls.description,
-        defaultFactorDeltas: cls.defaultFactorDeltas,
-      },
-    })
-    created++
-  }
-  console.log(
-    `  event_classes: ${created} created, ${eventClassSeeds.length - created} existing`,
-  )
+  const { created, existing } = await applyEventClassSeeds(prisma)
+  console.log(`  event_classes: ${created} created, ${existing} existing`)
 }
 
 async function seedEventInstances() {
-  // Build slug → id lookup once.
-  const classes = await prisma.eventClass.findMany({ select: { id: true, slug: true } })
-  const classIdBySlug = new Map(classes.map((c) => [c.slug, c.id]))
-
-  let created = 0
-  let skippedNoClass = 0
-  let computed = 0
-  for (const seed of eventInstanceSeeds) {
-    const classId = classIdBySlug.get(seed.eventClassSlug)
-    if (!classId) {
-      skippedNoClass++
-      continue
-    }
-    const occurredAt = new Date(`${seed.occurredAt}T00:00:00Z`)
-    // Idempotency key: same class + same date + same description = same instance.
-    // We don't have a unique index, so check manually.
-    const existing = await prisma.eventInstance.findFirst({
-      where: {
-        eventClassId: classId,
-        occurredAt,
-        description: seed.description,
-      },
-      select: { id: true },
-    })
-    if (existing) continue
-
-    const tickerReturns = await computeEventReturns(
-      prisma,
-      occurredAt,
-      seed.affectedSymbols,
-    )
-    if (Object.values(tickerReturns).some((r) => r.d1 !== null)) computed++
-
-    await prisma.eventInstance.create({
-      data: {
-        eventClassId: classId,
-        occurredAt,
-        description: seed.description,
-        sourceKind: 'manual',
-        sourceUrl: seed.sourceUrl,
-        affectedSymbols: [...seed.affectedSymbols],
-        tickerReturns: tickerReturns as unknown as object,
-      },
-    })
-    created++
-  }
+  const { created, existing, skippedNoClass, computed } =
+    await applyEventInstanceSeeds(prisma)
   console.log(
-    `  event_instances: ${created} created, ${eventInstanceSeeds.length - created - skippedNoClass} existing, ${skippedNoClass} skipped (unknown class), ${computed}/${created} with price data`,
+    `  event_instances: ${created} created, ${existing} existing, ${skippedNoClass} skipped (unknown class), ${computed}/${created} with price data`,
   )
 }
 

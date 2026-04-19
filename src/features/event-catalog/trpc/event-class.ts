@@ -1,9 +1,9 @@
 import { TRPCError, type TRPCRouterRecord } from '@trpc/server'
 import { z } from 'zod'
 import { prisma } from '#/server/db'
-import { eventClassStats, parseTickerReturns } from '#/lib/events/stats'
-import { recomputeAllEventReturns } from '#/lib/events/compute-returns'
-import { publicProcedure } from '../init'
+import { publicProcedure } from '#/integrations/trpc/init'
+import { recomputeAllEventReturns } from '../lib/compute-returns'
+import { eventClassStats, parseTickerReturns } from '../lib/stats'
 
 export const eventClassRouter = {
   list: publicProcedure.query(async () => {

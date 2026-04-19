@@ -2,8 +2,15 @@
 
 The event catalog is the empirical backbone of the alert engine: every alert
 cites historical comparable events and their realised forward returns. This
-document explains the taxonomy choices in `src/server/seed/event-classes.ts`
-and lists the historical instances seeded in `src/server/seed/event-instances.ts`.
+document explains the taxonomy choices in
+`src/features/event-catalog/seed/classes.ts` and lists the historical
+instances seeded in `src/features/event-catalog/seed/instances.ts`.
+
+The whole feature lives in `src/features/event-catalog/` — `lib/`
+(pure helpers + tests), `seed/` (data + idempotent apply functions),
+`trpc/` (routers), `ui/` (React pages). The framework hooks (Prisma
+seed orchestrator, tRPC router registry, TanStack Router file routes)
+import a thin surface from `#/features/event-catalog`.
 
 ## Design choices
 
@@ -31,7 +38,7 @@ This is the bootstrap; the operator grows the catalog over time via the
 `/admin/events/[slug]` "Add instance" form, which immediately recomputes
 forward returns from `prices_daily`.
 
-**Returns: trade-day-aligned, total-return.** `compute-returns.ts` finds the
+**Returns: trade-day-aligned, total-return.** `lib/compute-returns.ts` finds the
 first trading day at-or-after `occurredAt` (anchor = day 0), then takes
 `adjClose[t+1] / adjClose[0] - 1` for d1/d5/d20. Adjusted close handles
 dividends + splits. Weekend / holiday event dates are handled naturally.

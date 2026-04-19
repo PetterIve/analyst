@@ -1,5 +1,5 @@
 import { prisma } from '#/server/db'
-import { recomputeAllEventReturns } from '#/lib/events/compute-returns'
+import { recomputeAllEventReturns } from '#/features/event-catalog'
 
 async function main() {
   const started = Date.now()

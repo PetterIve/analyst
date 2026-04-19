@@ -1,8 +1,8 @@
 import { TRPCError, type TRPCRouterRecord } from '@trpc/server'
 import { z } from 'zod'
 import { prisma } from '#/server/db'
-import { computeEventReturns } from '#/lib/events/compute-returns'
-import { publicProcedure } from '../init'
+import { publicProcedure } from '#/integrations/trpc/init'
+import { computeEventReturns } from '../lib/compute-returns'
 
 const symbolSchema = z.string().min(1).max(20)
 
