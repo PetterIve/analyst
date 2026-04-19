@@ -1,21 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { logger } from '#/lib/logger.server'
 import { getBot, telegramConfigured } from '#/server/telegram/bot'
-
-function authorized(request: Request): boolean {
-  // Registration is a one-shot admin op (set + query webhook URL). Gate the
-  // same way cron routes do — bearer `CRON_SECRET`. In dev with no secret
-  // set, allow the call so local smoke testing is ergonomic.
-  const secret = process.env.CRON_SECRET
-  if (!secret) return process.env.NODE_ENV !== 'production'
-  return request.headers.get('authorization') === `Bearer ${secret}`
-}
+import { cronAuthEnv, verifyCronBearer } from '#/server/telegram/auth'
 
 async function handler({ request }: { request: Request }) {
   if (!telegramConfigured()) {
     return new Response('TELEGRAM_BOT_TOKEN is not set', { status: 503 })
   }
-  if (!authorized(request)) {
+  if (!verifyCronBearer(request.headers, cronAuthEnv())) {
     return new Response('Unauthorized', { status: 401 })
   }
 
