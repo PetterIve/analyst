@@ -17,13 +17,15 @@ async function handler({ request }: { request: Request }) {
     return new Response('Unauthorized', { status: 401 })
   }
 
+  const startedAt = new Date()
   const run = await prisma.cronRun.create({
     data: {
       jobName: JOB_NAME,
-      startedAt: new Date(),
+      startedAt,
       status: 'ok',
     },
   })
+  logger.info({ job: JOB_NAME, runId: run.id }, 'cron starting')
 
   try {
     const tickers = await prisma.ticker.findMany({
@@ -40,6 +42,18 @@ async function handler({ request }: { request: Request }) {
 
     const errors = results.filter((r) => r.error).length
     const inserted = results.reduce((n, r) => n + r.rowsInserted, 0)
+    const durationMs = Date.now() - startedAt.getTime()
+    logger.info(
+      {
+        job: JOB_NAME,
+        runId: run.id,
+        tickers: results.length,
+        errors,
+        rowsInserted: inserted,
+        durationMs,
+      },
+      'cron finished',
+    )
 
     await prisma.cronRun.update({
       where: { id: run.id },
