@@ -741,3 +741,23 @@ html[data-theme='terminal'] .seg button[aria-pressed='true'] {
 input[type='range'] {
   accent-color: var(--accent);
 }
+
+/* Skeleton shimmer — used for Clerk sign-in preloader */
+.skeleton-bar {
+  background: linear-gradient(
+    90deg,
+    var(--bg-2) 0%,
+    var(--border) 50%,
+    var(--bg-2) 100%
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: skeleton-pulse 1.4s linear infinite;
+}
+@keyframes skeleton-pulse {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
