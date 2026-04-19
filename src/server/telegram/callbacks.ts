@@ -19,7 +19,7 @@ export function parseCallback(data: string): ParsedCallback | null {
   const [prefix, idStr, value] = parts
   if (prefix !== 'rate') return null
   const alertId = Number.parseInt(idStr, 10)
-  if (!Number.isFinite(alertId) || alertId <= 0) return null
+  if (!Number.isInteger(alertId) || alertId < 0) return null
   if (value !== 'up' && value !== 'down') return null
   return { prefix, alertId, value }
 }

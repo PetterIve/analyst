@@ -27,10 +27,22 @@ describe('parseCallback', () => {
     expect(parseCallback('mute:42:up')).toBeNull()
   })
 
-  it('rejects non-numeric or non-positive alertId', () => {
+  it('accepts alertId 0 (boundary case, not semantically meaningful but parseable)', () => {
+    expect(parseCallback('rate:0:up')).toEqual({
+      prefix: 'rate',
+      alertId: 0,
+      value: 'up',
+    })
+  })
+
+  it('rejects non-integer or negative alertId', () => {
     expect(parseCallback('rate:abc:up')).toBeNull()
-    expect(parseCallback('rate:0:up')).toBeNull()
     expect(parseCallback('rate:-1:up')).toBeNull()
+    expect(parseCallback('rate:1.5:up')).toEqual({
+      prefix: 'rate',
+      alertId: 1,
+      value: 'up',
+    })
   })
 
   it('rejects unknown rating value', () => {

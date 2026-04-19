@@ -10,7 +10,7 @@ import { sendAlert } from '../src/server/telegram/send-alert.ts'
 async function main() {
   const result = await sendAlert(
     {
-      alertId: 0,
+      alertId: 1,
       symbol: 'FRO',
       direction: 'long',
       entryPrice: 21.34,
@@ -21,7 +21,7 @@ async function main() {
       nComparables: 18,
       invalidation: 'Ceasefire announced or spot rates revert >5% within 2 days.',
     },
-    'https://analyst.example.com/alerts/0',
+    'https://analyst.example.com/alerts/1',
   )
   console.log(JSON.stringify(result, null, 2))
   if (result.sent === 0) {
