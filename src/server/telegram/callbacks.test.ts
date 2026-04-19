@@ -38,11 +38,14 @@ describe('parseCallback', () => {
   it('rejects non-integer or negative alertId', () => {
     expect(parseCallback('rate:abc:up')).toBeNull()
     expect(parseCallback('rate:-1:up')).toBeNull()
-    expect(parseCallback('rate:1.5:up')).toEqual({
-      prefix: 'rate',
-      alertId: 1,
-      value: 'up',
-    })
+    expect(parseCallback('rate:1.5:up')).toBeNull()
+  })
+
+  it('rejects numeric-prefix garbage like rate:42abc:up', () => {
+    // parseInt would quietly return 42 and accept the payload.
+    expect(parseCallback('rate:42abc:up')).toBeNull()
+    expect(parseCallback('rate:42 :up')).toBeNull()
+    expect(parseCallback('rate:+42:up')).toBeNull()
   })
 
   it('rejects unknown rating value', () => {

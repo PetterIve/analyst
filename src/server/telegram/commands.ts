@@ -70,18 +70,22 @@ async function upsertSubscriber(
   chatId: string,
   username: string | undefined,
 ): Promise<UpsertResult> {
-  const existing = await prisma.subscriber.findUnique({ where: { chatId } })
-  if (existing) {
-    if (!existing.active || (username && username !== existing.username)) {
-      await prisma.subscriber.update({
-        where: { chatId },
-        data: { active: true, username: username ?? existing.username },
-      })
-    }
-    return { created: false }
-  }
-  await prisma.subscriber.create({
-    data: { chatId, username, active: true },
+  // Atomic: two concurrent /start updates from Telegram (e.g. network
+  // retry) race if we do findUnique + create; upsert serialises at the DB.
+  // We still want to report whether *this* call created the row, so we
+  // check existence first (cheap, just informational) and let upsert
+  // handle the actual write idempotently.
+  const existing = await prisma.subscriber.findUnique({
+    where: { chatId },
+    select: { id: true },
   })
-  return { created: true }
+  await prisma.subscriber.upsert({
+    where: { chatId },
+    create: { chatId, username, active: true },
+    update: {
+      active: true,
+      ...(username ? { username } : {}),
+    },
+  })
+  return { created: existing === null }
 }

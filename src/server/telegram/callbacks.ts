@@ -18,8 +18,10 @@ export function parseCallback(data: string): ParsedCallback | null {
   if (parts.length !== 3) return null
   const [prefix, idStr, value] = parts
   if (prefix !== 'rate') return null
-  const alertId = Number.parseInt(idStr, 10)
-  if (!Number.isInteger(alertId) || alertId < 0) return null
+  // Strict digit match — parseInt would silently accept "42abc" as 42.
+  if (!/^\d+$/.test(idStr)) return null
+  const alertId = Number(idStr)
+  if (!Number.isSafeInteger(alertId)) return null
   if (value !== 'up' && value !== 'down') return null
   return { prefix, alertId, value }
 }
