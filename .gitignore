@@ -13,3 +13,6 @@ __unconfig*
 todos.json
 logs/
 src/generated/
+.claude/
+.dev.pid
+.dev.log

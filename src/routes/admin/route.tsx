@@ -1,8 +1,11 @@
 import { Link, Outlet, createFileRoute, useRouterState } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
+import { SignIn, UserButton, useAuth } from '@clerk/tanstack-react-start'
 import { Toaster } from '#/components/ui/sonner'
 import { Tweaks } from '#/components/Tweaks'
 import { Icon, type IconName } from '#/components/DesignIcons'
+
+const clerkEnabled = Boolean(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY)
 
 interface NavEntry {
   label: string
@@ -48,8 +51,66 @@ const CRUMBS: Record<string, ReadonlyArray<string>> = {
 }
 
 export const Route = createFileRoute('/admin')({
-  component: AdminLayout,
+  component: AdminGate,
 })
+
+function AdminGate() {
+  if (!clerkEnabled) return <AdminLayout />
+  return <AuthGate />
+}
+
+function AuthGate() {
+  const { isLoaded, isSignedIn } = useAuth()
+  if (!isLoaded) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'grid',
+          placeItems: 'center',
+          color: 'var(--fg-3)',
+          fontFamily: 'var(--font-mono)',
+          fontSize: 'var(--text-xs)',
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+        }}
+      >
+        Verifying session…
+      </div>
+    )
+  }
+  if (!isSignedIn) return <SignInScreen />
+  return <AdminLayout />
+}
+
+function SignInScreen() {
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'grid',
+        placeItems: 'center',
+        padding: 'var(--pad-5)',
+      }}
+    >
+      <div className="stack" style={{ gap: 'var(--pad-4)', alignItems: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div className="label-xs" style={{ marginBottom: 6 }}>
+            ANALYST · ADMIN
+          </div>
+          <h1 style={{ fontSize: 'var(--text-xl)', marginBottom: 4 }}>
+            Sign in to continue
+          </h1>
+          <div className="page-sub">
+            Admin access is limited to whitelisted emails.
+          </div>
+        </div>
+        <SignIn routing="hash" />
+      </div>
+      <Tweaks />
+    </div>
+  )
+}
 
 function AdminLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
@@ -175,6 +236,7 @@ function TopBar({ crumbs }: { crumbs: ReadonlyArray<string> }) {
       <div className="row-d" style={{ gap: 8 }}>
         <span className="label-xs">{today}</span>
         <span className="kbd">⌘K</span>
+        {clerkEnabled ? <UserButton /> : null}
       </div>
     </header>
   )

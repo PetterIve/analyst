@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClient } from '@tanstack/react-query'
 import superjson from 'superjson'
 import { createTRPCClient, httpBatchStreamLink } from '@trpc/client'
 import { createTRPCOptionsProxy } from '@trpc/tanstack-react-query'
 
+import { getToken } from '@clerk/tanstack-react-start'
 import type { TRPCRouter } from '#/integrations/trpc/router'
 import { TRPCProvider } from '#/integrations/trpc/react'
 
@@ -20,6 +21,15 @@ export const trpcClient = createTRPCClient<TRPCRouter>({
     httpBatchStreamLink({
       transformer: superjson,
       url: getUrl(),
+      async headers() {
+        if (typeof window === 'undefined') return {}
+        try {
+          const token = await getToken()
+          return token ? { Authorization: `Bearer ${token}` } : {}
+        } catch {
+          return {}
+        }
+      },
     }),
   ],
 })
