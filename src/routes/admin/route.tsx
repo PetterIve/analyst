@@ -26,6 +26,7 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     entries: [
       { label: 'Alert feed', to: '/admin/feed', icon: 'bell', enabled: false, task: 'T11' },
       { label: 'Tickers', to: '/admin/tickers', icon: 'ticker', enabled: true },
+      { label: 'News', to: '/admin/news', icon: 'feed', enabled: true },
       { label: 'Prices', to: '/admin/prices', icon: 'chart', enabled: true },
       { label: 'Event catalog', to: '/admin/events', icon: 'layers', enabled: false, task: 'T08' },
       { label: 'Performance', to: '/admin/perf', icon: 'chart', enabled: false, task: 'T15' },
@@ -35,7 +36,7 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
     label: 'Admin',
     entries: [
       { label: 'Factors', to: '/admin/factors', icon: 'sliders', enabled: true },
-      { label: 'Sources', to: '/admin/sources', icon: 'feed', enabled: false, task: 'T04' },
+      { label: 'Sources', to: '/admin/sources', icon: 'feed', enabled: true },
       { label: 'X accounts', to: '/admin/x-accounts', icon: 'x', enabled: false, task: 'T05' },
       { label: 'Extractor', to: '/admin/extractor', icon: 'cpu', enabled: false, task: 'T07' },
       { label: 'Prompt', to: '/admin/prompt', icon: 'terminal', enabled: false, task: 'T07' },
@@ -46,8 +47,10 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
 
 const CRUMBS: Record<string, ReadonlyArray<string>> = {
   '/admin/tickers': ['Analyst', 'Tickers'],
+  '/admin/news': ['Analyst', 'News'],
   '/admin/prices': ['Analyst', 'Prices'],
   '/admin/factors': ['Admin', 'Factors'],
+  '/admin/sources': ['Admin', 'Sources'],
 }
 
 export const Route = createFileRoute('/admin')({
@@ -178,7 +181,7 @@ function Sidebar({ pathname }: { pathname: string }) {
             fontFamily: 'var(--font-mono)',
           }}
         >
-          cron lands in T04
+          news cron · /api/cron/ingest-news
         </div>
       </div>
     </aside>

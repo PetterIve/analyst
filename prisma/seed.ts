@@ -3,6 +3,7 @@ import { PrismaClient } from '../src/generated/prisma/client.js'
 import { tickerSeeds } from '../src/server/seed/tickers.js'
 import { factorSeeds } from '../src/server/seed/factors.js'
 import { factorInitialByTicker } from '../src/server/seed/factor-initial-state.js'
+import { newsSourceSeeds } from '../src/server/seed/news-sources.js'
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
@@ -80,7 +81,25 @@ async function seedFactorState() {
 }
 
 async function seedNewsSources() {
-  // Populated in T04 — RSS source list.
+  let created = 0
+  for (const s of newsSourceSeeds) {
+    const existing = await prisma.newsSource.findFirst({
+      where: { url: s.url },
+      select: { id: true },
+    })
+    if (existing) continue
+    await prisma.newsSource.create({
+      data: {
+        name: s.name,
+        url: s.url,
+        rssUrl: s.rssUrl,
+        kind: s.kind,
+        pollIntervalSec: s.pollIntervalSec,
+      },
+    })
+    created++
+  }
+  console.log(`  news_sources: ${created} created, ${newsSourceSeeds.length - created} existing`)
 }
 
 async function seedXAccounts() {
