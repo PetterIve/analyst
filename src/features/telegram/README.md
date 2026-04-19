@@ -64,6 +64,6 @@ acceptable.
 
 `rate:{alertId}:{up|down}` callback payloads are parsed and logged, but
 not yet persisted. T14 plugs the real handler in via
-`setRateHandler(...)` in `src/server/telegram/callbacks.ts` — no
+`setRateHandler(...)` in `src/features/telegram/callbacks.ts` — no
 dispatcher rewiring needed. T14 also adds single-vote enforcement + the
 message-keyboard edit after the first tap.

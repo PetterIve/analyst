@@ -49,7 +49,7 @@ USE_NEON=1 npm run dev
 
 Alert delivery runs over a grammy bot. Setup, commands, local-testing,
 and the T14 rating hand-off are documented in
-[`src/server/telegram/README.md`](./src/server/telegram/README.md).
+[`src/features/telegram/README.md`](./src/features/telegram/README.md).
 
 ## Cron routes
 

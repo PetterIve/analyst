@@ -5,7 +5,7 @@
  *
  *   npm run dev:test-alert
  */
-import { sendAlert } from '../src/server/telegram/send-alert.ts'
+import { sendAlert } from '../src/features/telegram/send-alert.ts'
 
 async function main() {
   const result = await sendAlert(

@@ -9,7 +9,7 @@
  * time as a deployed webhook-mode bot with the same token — Telegram lets
  * exactly one consumer hold updates.
  */
-import { getBot } from '../src/server/telegram/bot.ts'
+import { getBot } from '../src/features/telegram/bot.ts'
 
 async function main() {
   const bot = getBot()

@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { logger } from '#/lib/logger.server'
-import { getBot, telegramConfigured } from '#/server/telegram/bot'
-import { cronAuthEnv, verifyCronBearer } from '#/server/telegram/auth'
+import { getBot, telegramConfigured } from '#/features/telegram/bot'
+import { cronAuthEnv, verifyCronBearer } from '#/features/telegram/auth'
 
 async function handler({ request }: { request: Request }) {
   if (!telegramConfigured()) {

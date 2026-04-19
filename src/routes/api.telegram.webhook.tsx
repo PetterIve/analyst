@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { webhookCallback } from 'grammy'
 import { logger } from '#/lib/logger.server'
-import { getBot, telegramConfigured } from '#/server/telegram/bot'
-import { telegramAuthEnv, verifyTelegramSecret } from '#/server/telegram/auth'
+import { getBot, telegramConfigured } from '#/features/telegram/bot'
+import { telegramAuthEnv, verifyTelegramSecret } from '#/features/telegram/auth'
 
 async function handler({ request }: { request: Request }) {
   if (!telegramConfigured()) {
