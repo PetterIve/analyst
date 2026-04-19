@@ -6,7 +6,13 @@
     "#/*": "./src/*"
   },
   "scripts": {
-    "dev": "dotenv -e .env.local -- sh -c \"NODE_OPTIONS='--import ./instrument.server.mjs' vite dev --port 3000\"",
+    "dev": "scripts/dev-daemon.sh start",
+    "dev:fg": "dotenv -e .env.local -- sh -c \"NODE_OPTIONS='--import ./instrument.server.mjs' vite dev --port ${PORT:-3000}\"",
+    "dev:start": "scripts/dev-daemon.sh start",
+    "dev:stop": "scripts/dev-daemon.sh stop",
+    "dev:restart": "scripts/dev-daemon.sh restart",
+    "dev:status": "scripts/dev-daemon.sh status",
+    "dev:logs": "scripts/dev-daemon.sh logs",
     "build": "vite build && cp instrument.server.mjs .output/server",
     "preview": "vite preview",
     "test": "vitest run",
@@ -24,7 +30,7 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
-    "@clerk/clerk-react": "^5.61.3",
+    "@clerk/tanstack-react-start": "^1.1.3",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/adapter-pg": "^7.4.2",
     "@prisma/client": "^7.4.2",

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { TRPCRouterRecord } from '@trpc/server'
 import { prisma } from '#/server/db'
-import { publicProcedure } from '../init'
+import { adminProcedure, publicProcedure } from '../init'
 
 export const tickerRouter = {
   list: publicProcedure.query(async () => {
@@ -10,10 +10,7 @@ export const tickerRouter = {
     })
   }),
 
-  // TODO(auth): Guard with adminProcedure before exposing beyond local dev.
-  // Reachable today by anyone who can hit /api/trpc; follow-up PR will add
-  // tRPC context + header-based admin auth.
-  update: publicProcedure
+  update: adminProcedure
     .input(
       z.object({
         id: z.number().int(),
