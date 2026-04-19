@@ -3,20 +3,19 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { toast } from 'sonner'
 import { useTRPC } from '#/integrations/trpc/react'
-import { Input } from '#/components/ui/input'
-import { Switch } from '#/components/ui/switch'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '#/components/ui/table'
 
 export const Route = createFileRoute('/admin/tickers')({
   component: TickersPage,
 })
+
+type TickerRow = {
+  id: number
+  symbol: string
+  exchange: string
+  segment: string
+  name: string
+  active: boolean
+}
 
 function TickersPage() {
   const trpc = useTRPC()
@@ -26,109 +25,117 @@ function TickersPage() {
   const updateMutation = useMutation(
     trpc.ticker.update.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: trpc.ticker.list.queryKey(),
-        })
+        queryClient.invalidateQueries({ queryKey: trpc.ticker.list.queryKey() })
       },
-      onError: (error) => {
-        toast.error(`Update failed: ${error.message}`)
-      },
+      onError: (error) => toast.error(`Update failed: ${error.message}`),
     }),
   )
 
+  const activeCount = tickers?.filter((t) => t.active).length ?? 0
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Tickers</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Tanker universe. Toggle <code>active</code> to include/exclude from
-          ingestion and alerts. Edit name inline.
-        </p>
+    <div className="page">
+      <div className="page-head">
+        <div>
+          <div className="label-xs" style={{ marginBottom: 6 }}>
+            ANALYST / TICKERS
+          </div>
+          <h1 className="page-title">Ticker universe</h1>
+          <div className="page-sub">
+            Crude + product tankers tracked by the engine. Toggle active to
+            include in ingestion and alerts.
+          </div>
+        </div>
+        <div className="row-d">
+          <span className="pill">{tickers?.length ?? 0} total</span>
+          <span className="pill ok">
+            <span className="dot" /> {activeCount} active
+          </span>
+        </div>
       </div>
 
-      {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading…</p>
-      ) : (
-        <div className="rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-24">Symbol</TableHead>
-                <TableHead className="w-28">Exchange</TableHead>
-                <TableHead className="w-28">Segment</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead className="w-24 text-right">Active</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+      <div className="card">
+        <div className="card-head">
+          <span className="title">Universe</span>
+          <div className="spacer" />
+          <span className="label-xs">editable</span>
+        </div>
+        {isLoading ? (
+          <div style={{ padding: 'var(--pad-4)', color: 'var(--fg-3)' }}>
+            Loading…
+          </div>
+        ) : (
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th style={{ width: 100 }}>Symbol</th>
+                <th style={{ width: 110 }}>Exchange</th>
+                <th style={{ width: 110 }}>Segment</th>
+                <th>Name</th>
+                <th style={{ width: 110 }}>Active</th>
+              </tr>
+            </thead>
+            <tbody>
               {tickers?.map((t) => (
-                <TickerRow
+                <Row
                   key={t.id}
-                  ticker={t}
+                  ticker={t as TickerRow}
                   onUpdate={(patch) =>
                     updateMutation.mutate({ id: t.id, ...patch })
                   }
                 />
               ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   )
 }
 
-interface TickerRowProps {
-  ticker: {
-    id: number
-    symbol: string
-    exchange: string
-    segment: string
-    name: string
-    active: boolean
-  }
+function Row({
+  ticker,
+  onUpdate,
+}: {
+  ticker: TickerRow
   onUpdate: (patch: { name?: string; active?: boolean }) => void
-}
-
-function TickerRow({ ticker, onUpdate }: TickerRowProps) {
-  const [draftName, setDraftName] = useState(ticker.name)
-
-  const commitName = () => {
-    const trimmed = draftName.trim()
-    if (trimmed && trimmed !== ticker.name) {
-      onUpdate({ name: trimmed })
-    } else {
-      setDraftName(ticker.name)
-    }
+}) {
+  const [draft, setDraft] = useState(ticker.name)
+  const commit = () => {
+    const trimmed = draft.trim()
+    if (trimmed && trimmed !== ticker.name) onUpdate({ name: trimmed })
+    else setDraft(ticker.name)
   }
-
   return (
-    <TableRow>
-      <TableCell className="font-mono font-semibold">{ticker.symbol}</TableCell>
-      <TableCell className="text-muted-foreground">{ticker.exchange}</TableCell>
-      <TableCell>
-        <span className="rounded border px-2 py-0.5 text-xs uppercase tracking-wide">
-          {ticker.segment}
-        </span>
-      </TableCell>
-      <TableCell>
-        <Input
-          value={draftName}
-          onChange={(e) => setDraftName(e.target.value)}
-          onBlur={commitName}
+    <tr>
+      <td>
+        <b className="mono">{ticker.symbol}</b>
+      </td>
+      <td className="mono label-xs">{ticker.exchange}</td>
+      <td>
+        <span className="pill">{ticker.segment.toUpperCase()}</span>
+      </td>
+      <td>
+        <input
+          className="input-d"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
           onKeyDown={(e) => {
             if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
-            if (e.key === 'Escape') setDraftName(ticker.name)
+            if (e.key === 'Escape') setDraft(ticker.name)
           }}
-          className="h-8"
         />
-      </TableCell>
-      <TableCell className="text-right">
-        <Switch
-          checked={ticker.active}
-          onCheckedChange={(checked) => onUpdate({ active: checked })}
-        />
-      </TableCell>
-    </TableRow>
+      </td>
+      <td>
+        <button
+          type="button"
+          className={`btn sm${ticker.active ? ' primary' : ''}`}
+          onClick={() => onUpdate({ active: !ticker.active })}
+        >
+          {ticker.active ? 'ON' : 'OFF'}
+        </button>
+      </td>
+    </tr>
   )
 }
