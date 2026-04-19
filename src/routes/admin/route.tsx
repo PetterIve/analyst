@@ -74,7 +74,9 @@ function Sidebar({ pathname }: { pathname: string }) {
       <div className="brand">
         <div className="brand-mark">A</div>
         <div className="brand-name">Analyst</div>
-        <span className="brand-sub">v0.4</span>
+        <span className="brand-sub">
+          {import.meta.env.VITE_WT_LABEL ?? 'v0.4'}
+        </span>
       </div>
 
       {NAV_GROUPS.map((group) => (
