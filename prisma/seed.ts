@@ -4,6 +4,10 @@ import { tickerSeeds } from '../src/server/seed/tickers.js'
 import { factorSeeds } from '../src/server/seed/factors.js'
 import { factorInitialByTicker } from '../src/server/seed/factor-initial-state.js'
 import { newsSourceSeeds } from '../src/server/seed/news-sources.js'
+import {
+  applyEventClassSeeds,
+  applyEventInstanceSeeds,
+} from '../src/features/event-catalog/index.js'
 
 const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL!,
@@ -107,7 +111,16 @@ async function seedXAccounts() {
 }
 
 async function seedEventClasses() {
-  // Populated in T08 — event catalog bootstrap.
+  const { created, existing } = await applyEventClassSeeds(prisma)
+  console.log(`  event_classes: ${created} created, ${existing} existing`)
+}
+
+async function seedEventInstances() {
+  const { created, existing, skippedNoClass, computed } =
+    await applyEventInstanceSeeds(prisma)
+  console.log(
+    `  event_instances: ${created} created, ${existing} existing, ${skippedNoClass} skipped (unknown class), ${computed}/${created} with price data`,
+  )
 }
 
 async function main() {
@@ -118,6 +131,7 @@ async function main() {
   await seedNewsSources()
   await seedXAccounts()
   await seedEventClasses()
+  await seedEventInstances()
   console.log('Seed complete.')
 }
 

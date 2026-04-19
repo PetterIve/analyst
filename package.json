@@ -29,6 +29,7 @@
     "db:studio": "dotenv -e .env.local -- prisma studio",
     "db:seed": "dotenv -e .env.local -- prisma db seed",
     "backfill:prices": "dotenv -e .env.local -- tsx scripts/backfill-prices.ts",
+    "recompute:event-returns": "dotenv -e .env.local -- tsx scripts/recompute-event-returns.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },

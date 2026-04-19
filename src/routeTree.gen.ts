@@ -19,10 +19,12 @@ import { Route as AdminSourcesRouteImport } from './routes/admin/sources'
 import { Route as AdminNewsRouteImport } from './routes/admin/news'
 import { Route as AdminFactorsRouteImport } from './routes/admin/factors'
 import { Route as AdminPricesIndexRouteImport } from './routes/admin/prices/index'
+import { Route as AdminEventsIndexRouteImport } from './routes/admin/events/index'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
 import { Route as ApiCronIngestPricesRouteImport } from './routes/api.cron.ingest-prices'
 import { Route as ApiCronIngestNewsRouteImport } from './routes/api.cron.ingest-news'
 import { Route as AdminPricesSymbolRouteImport } from './routes/admin/prices/$symbol'
+import { Route as AdminEventsSlugRouteImport } from './routes/admin/events/$slug'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -74,6 +76,11 @@ const AdminPricesIndexRoute = AdminPricesIndexRouteImport.update({
   path: '/prices/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminEventsIndexRoute = AdminEventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
   id: '/api/trpc/$',
   path: '/api/trpc/$',
@@ -94,6 +101,11 @@ const AdminPricesSymbolRoute = AdminPricesSymbolRouteImport.update({
   path: '/prices/$symbol',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminEventsSlugRoute = AdminEventsSlugRouteImport.update({
+  id: '/events/$slug',
+  path: '/events/$slug',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -105,10 +117,12 @@ export interface FileRoutesByFullPath {
   '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/events/$slug': typeof AdminEventsSlugRoute
   '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
   '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
+  '/admin/events/': typeof AdminEventsIndexRoute
   '/admin/prices/': typeof AdminPricesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -120,10 +134,12 @@ export interface FileRoutesByTo {
   '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
   '/admin': typeof AdminIndexRoute
+  '/admin/events/$slug': typeof AdminEventsSlugRoute
   '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
   '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
+  '/admin/events': typeof AdminEventsIndexRoute
   '/admin/prices': typeof AdminPricesIndexRoute
 }
 export interface FileRoutesById {
@@ -137,10 +153,12 @@ export interface FileRoutesById {
   '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
   '/admin/': typeof AdminIndexRoute
+  '/admin/events/$slug': typeof AdminEventsSlugRoute
   '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
   '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
+  '/admin/events/': typeof AdminEventsIndexRoute
   '/admin/prices/': typeof AdminPricesIndexRoute
 }
 export interface FileRouteTypes {
@@ -155,10 +173,12 @@ export interface FileRouteTypes {
     | '/admin/tickers'
     | '/api/logs'
     | '/admin/'
+    | '/admin/events/$slug'
     | '/admin/prices/$symbol'
     | '/api/cron/ingest-news'
     | '/api/cron/ingest-prices'
     | '/api/trpc/$'
+    | '/admin/events/'
     | '/admin/prices/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -170,10 +190,12 @@ export interface FileRouteTypes {
     | '/admin/tickers'
     | '/api/logs'
     | '/admin'
+    | '/admin/events/$slug'
     | '/admin/prices/$symbol'
     | '/api/cron/ingest-news'
     | '/api/cron/ingest-prices'
     | '/api/trpc/$'
+    | '/admin/events'
     | '/admin/prices'
   id:
     | '__root__'
@@ -186,10 +208,12 @@ export interface FileRouteTypes {
     | '/admin/tickers'
     | '/api/logs'
     | '/admin/'
+    | '/admin/events/$slug'
     | '/admin/prices/$symbol'
     | '/api/cron/ingest-news'
     | '/api/cron/ingest-prices'
     | '/api/trpc/$'
+    | '/admin/events/'
     | '/admin/prices/'
   fileRoutesById: FileRoutesById
 }
@@ -275,6 +299,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPricesIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/events/': {
+      id: '/admin/events/'
+      path: '/events'
+      fullPath: '/admin/events/'
+      preLoaderRoute: typeof AdminEventsIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/api/trpc/$': {
       id: '/api/trpc/$'
       path: '/api/trpc/$'
@@ -303,6 +334,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminPricesSymbolRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/events/$slug': {
+      id: '/admin/events/$slug'
+      path: '/events/$slug'
+      fullPath: '/admin/events/$slug'
+      preLoaderRoute: typeof AdminEventsSlugRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
   }
 }
 
@@ -312,7 +350,9 @@ interface AdminRouteRouteChildren {
   AdminSourcesRoute: typeof AdminSourcesRoute
   AdminTickersRoute: typeof AdminTickersRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminEventsSlugRoute: typeof AdminEventsSlugRoute
   AdminPricesSymbolRoute: typeof AdminPricesSymbolRoute
+  AdminEventsIndexRoute: typeof AdminEventsIndexRoute
   AdminPricesIndexRoute: typeof AdminPricesIndexRoute
 }
 
@@ -322,7 +362,9 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminSourcesRoute: AdminSourcesRoute,
   AdminTickersRoute: AdminTickersRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminEventsSlugRoute: AdminEventsSlugRoute,
   AdminPricesSymbolRoute: AdminPricesSymbolRoute,
+  AdminEventsIndexRoute: AdminEventsIndexRoute,
   AdminPricesIndexRoute: AdminPricesIndexRoute,
 }
 
