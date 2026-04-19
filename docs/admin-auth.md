@@ -10,8 +10,9 @@ Clerk user's primary email against an `ADMIN_EMAILS` whitelist.
   `requestMiddleware` so every request has Clerk's auth state available via
   `auth()` from `@clerk/tanstack-react-start/server`.
 - [`src/integrations/trpc/context.ts`](../src/integrations/trpc/context.ts) —
-  tRPC context calls `auth()` (no args; reads from the middleware), then
-  looks up the user's primary email via `clerkClient()`.
+  tRPC context calls `auth()` (no args; reads from the middleware) and
+  pulls the user's primary email from `sessionClaims.email`. Falls back
+  to `clerkClient().users.getUser()` only if the claim is missing.
 - [`src/integrations/trpc/init.ts`](../src/integrations/trpc/init.ts) —
   `adminProcedure` enforces the whitelist.
 - [`src/integrations/clerk/TokenSync.tsx`](../src/integrations/clerk/TokenSync.tsx)
@@ -22,6 +23,24 @@ Clerk user's primary email against an `ADMIN_EMAILS` whitelist.
   `Authorization: Bearer <jwt>` on every request.
 
 No sniffing of `window.Clerk`, no duplicated auth logic server-side.
+
+## One-time Clerk Dashboard setup
+
+To avoid a `clerkClient().users.getUser()` roundtrip on every admin mutation,
+add the email to the session token itself:
+
+1. Clerk Dashboard → **Sessions** → **Customize session token**.
+2. Add the claim:
+   ```json
+   {
+     "email": "{{user.primary_email_address}}"
+   }
+   ```
+3. Save. New sessions now carry `email` in `sessionClaims`, which the server
+   reads directly.
+
+If you skip this step, `adminProcedure` still works — it just falls back to
+fetching the user from the Clerk API per request.
 
 ## Env vars
 
