@@ -13,6 +13,8 @@
     "dev:restart": "scripts/dev-daemon.sh restart",
     "dev:status": "scripts/dev-daemon.sh status",
     "dev:logs": "scripts/dev-daemon.sh logs",
+    "dev:bot": "dotenv -e .env.local -- tsx scripts/dev-bot.ts",
+    "dev:test-alert": "dotenv -e .env.local -- tsx scripts/send-test-alert.ts",
     "build": "vite build && cp instrument.server.mjs .output/server",
     "preview": "vite preview",
     "test": "vitest run",
