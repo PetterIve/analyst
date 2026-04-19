@@ -12,6 +12,30 @@ const FORWARD_DAYS = 20
 const ANCHOR_PLUS_FORWARD = FORWARD_DAYS + 1 // anchor row + 20 forward trading days
 
 /**
+ * Pure horizon arithmetic over an ordered series of `adjClose` values where
+ * index 0 is the anchor (first trading day at-or-after the event) and index
+ * `n` is the n-th forward trading day. Splitting this from the DB-querying
+ * wrapper keeps the math unit-testable without a Prisma client.
+ *
+ * Returns `null` for any horizon whose forward bar is missing, and `null`
+ * for all horizons when the anchor is absent or zero (zero would produce
+ * Infinity / NaN).
+ */
+export function returnsFromAdjCloses(
+  adjCloses: ReadonlyArray<number>,
+): TickerReturns {
+  const anchor = adjCloses[0]
+  if (anchor === undefined || anchor === 0) {
+    return { d1: null, d5: null, d20: null }
+  }
+  const ret = (offset: number): number | null => {
+    const value = adjCloses[offset]
+    return value === undefined ? null : value / anchor - 1
+  }
+  return { d1: ret(1), d5: ret(5), d20: ret(20) }
+}
+
+/**
  * Compute 1d / 5d / 20d trade-day-aligned returns for an event date across the
  * given tickers, using `adjClose` (total return — handles dividends/splits).
  *
@@ -42,23 +66,7 @@ export async function computeEventReturns(
       select: { adjClose: true },
     })
 
-    if (rows.length === 0) {
-      result[ticker.symbol] = { d1: null, d5: null, d20: null }
-      continue
-    }
-
-    const anchor = rows[0].adjClose
-    const ret = (offset: number): number | null => {
-      const row = rows[offset]
-      if (!row || anchor === 0) return null
-      return row.adjClose / anchor - 1
-    }
-
-    result[ticker.symbol] = {
-      d1: ret(1),
-      d5: ret(5),
-      d20: ret(20),
-    }
+    result[ticker.symbol] = returnsFromAdjCloses(rows.map((r) => r.adjClose))
   }
 
   // Symbols with no Ticker row at all (typo in seed) get explicit nulls so the
