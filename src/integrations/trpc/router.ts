@@ -5,6 +5,8 @@ import { newsItemRouter } from './routers/news-item'
 import { newsSourceRouter } from './routers/news-source'
 import { priceRouter } from './routers/price'
 import { cronRouter } from './routers/cron'
+import { eventClassRouter } from './routers/event-class'
+import { eventInstanceRouter } from './routers/event-instance'
 
 export const trpcRouter = createTRPCRouter({
   ticker: tickerRouter,
@@ -13,6 +15,8 @@ export const trpcRouter = createTRPCRouter({
   newsSource: newsSourceRouter,
   price: priceRouter,
   cron: cronRouter,
+  eventClass: eventClassRouter,
+  eventInstance: eventInstanceRouter,
 })
 
 export type TRPCRouter = typeof trpcRouter

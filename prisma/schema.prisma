@@ -166,6 +166,14 @@ model EventInstance {
   sourceKind    EventSourceKind @map("source_kind")
   newsItemId    Int?            @map("news_item_id")
   xPostId       Int?            @map("x_post_id")
+  /// External audit link (URL) for manual / hand-seeded events. Null when
+  /// `sourceKind` is `news` or `x` — those carry the link via the FK relation.
+  sourceUrl     String?         @map("source_url")
+  /// Ticker symbols whose `tickerReturns` are tracked for this instance.
+  /// Stored as a JSON array of strings so the original "what tickers did the
+  /// operator say were affected?" set is preserved even if a ticker later
+  /// gains/loses price data.
+  affectedSymbols Json          @map("affected_symbols")
   tickerReturns Json            @map("ticker_returns")
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @updatedAt @map("updated_at")
