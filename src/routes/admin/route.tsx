@@ -40,7 +40,7 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
       { label: 'X accounts', to: '/admin/x-accounts', icon: 'x', enabled: false, task: 'T05' },
       { label: 'Extractor', to: '/admin/extractor', icon: 'cpu', enabled: false, task: 'T07' },
       { label: 'Prompt', to: '/admin/prompt', icon: 'terminal', enabled: false, task: 'T07' },
-      { label: 'Workers', to: '/admin/workers', icon: 'clock', enabled: false, task: 'T16' },
+      { label: 'Workers', to: '/admin/health', icon: 'clock', enabled: true },
     ],
   },
 ]
@@ -52,6 +52,7 @@ const CRUMBS: Record<string, ReadonlyArray<string>> = {
   '/admin/events': ['Analyst', 'Event catalog'],
   '/admin/factors': ['Admin', 'Factors'],
   '/admin/sources': ['Admin', 'Sources'],
+  '/admin/health': ['Admin', 'Workers'],
 }
 
 export const Route = createFileRoute('/admin')({

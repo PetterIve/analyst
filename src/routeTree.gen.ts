@@ -17,10 +17,13 @@ import { Route as ApiLogsRouteImport } from './routes/api.logs'
 import { Route as AdminTickersRouteImport } from './routes/admin/tickers'
 import { Route as AdminSourcesRouteImport } from './routes/admin/sources'
 import { Route as AdminNewsRouteImport } from './routes/admin/news'
+import { Route as AdminHealthRouteImport } from './routes/admin/health'
 import { Route as AdminFactorsRouteImport } from './routes/admin/factors'
 import { Route as AdminPricesIndexRouteImport } from './routes/admin/prices/index'
 import { Route as AdminEventsIndexRouteImport } from './routes/admin/events/index'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
+import { Route as ApiTelegramWebhookRouteImport } from './routes/api.telegram.webhook'
+import { Route as ApiTelegramRegisterRouteImport } from './routes/api.telegram.register'
 import { Route as ApiCronIngestPricesRouteImport } from './routes/api.cron.ingest-prices'
 import { Route as ApiCronIngestNewsRouteImport } from './routes/api.cron.ingest-news'
 import { Route as AdminPricesSymbolRouteImport } from './routes/admin/prices/$symbol'
@@ -66,6 +69,11 @@ const AdminNewsRoute = AdminNewsRouteImport.update({
   path: '/news',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminHealthRoute = AdminHealthRouteImport.update({
+  id: '/health',
+  path: '/health',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminFactorsRoute = AdminFactorsRouteImport.update({
   id: '/factors',
   path: '/factors',
@@ -84,6 +92,16 @@ const AdminEventsIndexRoute = AdminEventsIndexRouteImport.update({
 const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
   id: '/api/trpc/$',
   path: '/api/trpc/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTelegramWebhookRoute = ApiTelegramWebhookRouteImport.update({
+  id: '/api/telegram/webhook',
+  path: '/api/telegram/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTelegramRegisterRoute = ApiTelegramRegisterRouteImport.update({
+  id: '/api/telegram/register',
+  path: '/api/telegram/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCronIngestPricesRoute = ApiCronIngestPricesRouteImport.update({
@@ -112,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/admin/factors': typeof AdminFactorsRoute
+  '/admin/health': typeof AdminHealthRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/sources': typeof AdminSourcesRoute
   '/admin/tickers': typeof AdminTickersRoute
@@ -121,6 +140,8 @@ export interface FileRoutesByFullPath {
   '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
   '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
+  '/api/telegram/register': typeof ApiTelegramRegisterRoute
+  '/api/telegram/webhook': typeof ApiTelegramWebhookRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
   '/admin/events/': typeof AdminEventsIndexRoute
   '/admin/prices/': typeof AdminPricesIndexRoute
@@ -129,6 +150,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin/factors': typeof AdminFactorsRoute
+  '/admin/health': typeof AdminHealthRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/sources': typeof AdminSourcesRoute
   '/admin/tickers': typeof AdminTickersRoute
@@ -138,6 +160,8 @@ export interface FileRoutesByTo {
   '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
   '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
+  '/api/telegram/register': typeof ApiTelegramRegisterRoute
+  '/api/telegram/webhook': typeof ApiTelegramWebhookRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
   '/admin/events': typeof AdminEventsIndexRoute
   '/admin/prices': typeof AdminPricesIndexRoute
@@ -148,6 +172,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/admin/factors': typeof AdminFactorsRoute
+  '/admin/health': typeof AdminHealthRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/sources': typeof AdminSourcesRoute
   '/admin/tickers': typeof AdminTickersRoute
@@ -157,6 +182,8 @@ export interface FileRoutesById {
   '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
   '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
+  '/api/telegram/register': typeof ApiTelegramRegisterRoute
+  '/api/telegram/webhook': typeof ApiTelegramWebhookRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
   '/admin/events/': typeof AdminEventsIndexRoute
   '/admin/prices/': typeof AdminPricesIndexRoute
@@ -168,6 +195,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/about'
     | '/admin/factors'
+    | '/admin/health'
     | '/admin/news'
     | '/admin/sources'
     | '/admin/tickers'
@@ -177,6 +205,8 @@ export interface FileRouteTypes {
     | '/admin/prices/$symbol'
     | '/api/cron/ingest-news'
     | '/api/cron/ingest-prices'
+    | '/api/telegram/register'
+    | '/api/telegram/webhook'
     | '/api/trpc/$'
     | '/admin/events/'
     | '/admin/prices/'
@@ -185,6 +215,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/admin/factors'
+    | '/admin/health'
     | '/admin/news'
     | '/admin/sources'
     | '/admin/tickers'
@@ -194,6 +225,8 @@ export interface FileRouteTypes {
     | '/admin/prices/$symbol'
     | '/api/cron/ingest-news'
     | '/api/cron/ingest-prices'
+    | '/api/telegram/register'
+    | '/api/telegram/webhook'
     | '/api/trpc/$'
     | '/admin/events'
     | '/admin/prices'
@@ -203,6 +236,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/about'
     | '/admin/factors'
+    | '/admin/health'
     | '/admin/news'
     | '/admin/sources'
     | '/admin/tickers'
@@ -212,6 +246,8 @@ export interface FileRouteTypes {
     | '/admin/prices/$symbol'
     | '/api/cron/ingest-news'
     | '/api/cron/ingest-prices'
+    | '/api/telegram/register'
+    | '/api/telegram/webhook'
     | '/api/trpc/$'
     | '/admin/events/'
     | '/admin/prices/'
@@ -224,6 +260,8 @@ export interface RootRouteChildren {
   ApiLogsRoute: typeof ApiLogsRoute
   ApiCronIngestNewsRoute: typeof ApiCronIngestNewsRoute
   ApiCronIngestPricesRoute: typeof ApiCronIngestPricesRoute
+  ApiTelegramRegisterRoute: typeof ApiTelegramRegisterRoute
+  ApiTelegramWebhookRoute: typeof ApiTelegramWebhookRoute
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
 }
 
@@ -285,6 +323,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminNewsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/health': {
+      id: '/admin/health'
+      path: '/health'
+      fullPath: '/admin/health'
+      preLoaderRoute: typeof AdminHealthRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/factors': {
       id: '/admin/factors'
       path: '/factors'
@@ -311,6 +356,20 @@ declare module '@tanstack/react-router' {
       path: '/api/trpc/$'
       fullPath: '/api/trpc/$'
       preLoaderRoute: typeof ApiTrpcSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/telegram/webhook': {
+      id: '/api/telegram/webhook'
+      path: '/api/telegram/webhook'
+      fullPath: '/api/telegram/webhook'
+      preLoaderRoute: typeof ApiTelegramWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/telegram/register': {
+      id: '/api/telegram/register'
+      path: '/api/telegram/register'
+      fullPath: '/api/telegram/register'
+      preLoaderRoute: typeof ApiTelegramRegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cron/ingest-prices': {
@@ -346,6 +405,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteRouteChildren {
   AdminFactorsRoute: typeof AdminFactorsRoute
+  AdminHealthRoute: typeof AdminHealthRoute
   AdminNewsRoute: typeof AdminNewsRoute
   AdminSourcesRoute: typeof AdminSourcesRoute
   AdminTickersRoute: typeof AdminTickersRoute
@@ -358,6 +418,7 @@ interface AdminRouteRouteChildren {
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminFactorsRoute: AdminFactorsRoute,
+  AdminHealthRoute: AdminHealthRoute,
   AdminNewsRoute: AdminNewsRoute,
   AdminSourcesRoute: AdminSourcesRoute,
   AdminTickersRoute: AdminTickersRoute,
@@ -379,6 +440,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiLogsRoute: ApiLogsRoute,
   ApiCronIngestNewsRoute: ApiCronIngestNewsRoute,
   ApiCronIngestPricesRoute: ApiCronIngestPricesRoute,
+  ApiTelegramRegisterRoute: ApiTelegramRegisterRoute,
+  ApiTelegramWebhookRoute: ApiTelegramWebhookRoute,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,
 }
 export const routeTree = rootRouteImport
