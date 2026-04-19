@@ -68,6 +68,30 @@ status from there.
 
 Read-only queries (`ticker.list`, `factor.list`) remain public.
 
+## Test identity for agents (dev only)
+
+Dev Clerk instances treat any email containing `+clerk_test` as a test
+identity: the account skips real email verification and accepts the fixed
+OTP `424242` for any code prompt. Useful when a coding agent needs to sign
+into the admin UI without access to a real inbox.
+
+Recommended setup:
+
+1. Add a test email to `ADMIN_EMAILS` in `.env.local`, e.g.:
+   ```
+   ADMIN_EMAILS=you@real.com,analyst-agent+clerk_test@analyst.local
+   ```
+2. At the sign-in screen, enter the same test email. Clerk will send an
+   "email code" — use **`424242`** and hit continue.
+3. You're signed in as the test identity; admin mutations work.
+
+This trick only works on dev Clerk instances. In production, real Clerk
+accounts with real verification are required.
+
+For scripted e2e tests, prefer [`@clerk/testing`](https://clerk.com/docs/testing/overview)
+— it provides Playwright/Cypress helpers to authenticate without driving
+the UI at all.
+
 ## Client UX
 
 The tRPC client always attaches the current session JWT when one exists.
