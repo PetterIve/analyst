@@ -1,3 +1,4 @@
+name: analyst-wt1
 services:
   postgres:
     image: postgres:16
@@ -7,9 +8,9 @@ services:
       POSTGRES_PASSWORD: analyst
       POSTGRES_DB: analyst
     ports:
-      - "5434:5432"
+      - "5435:5432"
     volumes:
-      - analyst-pgdata:/var/lib/postgresql/data
+      - analyst-pgdata-wt1:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U analyst -d analyst"]
@@ -18,4 +19,4 @@ services:
       retries: 10
 
 volumes:
-  analyst-pgdata:
+  analyst-pgdata-wt1:
