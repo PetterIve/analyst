@@ -3,6 +3,7 @@ import { tickerRouter } from './routers/ticker'
 import { factorRouter } from './routers/factor'
 import { newsItemRouter } from './routers/news-item'
 import { newsSourceRouter } from './routers/news-source'
+import { priceRouter } from './routers/price'
 import { cronRouter } from './routers/cron'
 
 export const trpcRouter = createTRPCRouter({
@@ -10,6 +11,7 @@ export const trpcRouter = createTRPCRouter({
   factor: factorRouter,
   newsItem: newsItemRouter,
   newsSource: newsSourceRouter,
+  price: priceRouter,
   cron: cronRouter,
 })
 

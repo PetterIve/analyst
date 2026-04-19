@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "scripts/dev-daemon.sh start",
-    "dev:fg": "dotenv -e .env.local -- sh -c \"NODE_OPTIONS='--import ./instrument.server.mjs' vite dev --port ${PORT:-3000}\"",
+    "dev:fg": "dotenv -e .env.local -- vite dev",
     "dev:start": "scripts/dev-daemon.sh start",
     "dev:stop": "scripts/dev-daemon.sh stop",
     "dev:restart": "scripts/dev-daemon.sh restart",
@@ -26,6 +26,7 @@
     "db:migrate": "dotenv -e .env.local -- prisma migrate dev",
     "db:studio": "dotenv -e .env.local -- prisma studio",
     "db:seed": "dotenv -e .env.local -- prisma db seed",
+    "backfill:prices": "dotenv -e .env.local -- tsx scripts/backfill-prices.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -62,6 +63,7 @@
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "recharts": "^3.8.1",
     "rss-parser": "^3.13.0",
     "sonner": "^2.0.7",
     "storybook": "^10.2.15",
@@ -70,6 +72,7 @@
     "tailwindcss": "^4.1.18",
     "tw-animate-css": "^1.3.6",
     "vite-plugin-neon-new": "^0.8.0",
+    "yahoo-finance2": "^3.14.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
