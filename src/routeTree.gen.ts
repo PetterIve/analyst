@@ -15,8 +15,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ApiLogsRouteImport } from './routes/api.logs'
 import { Route as AdminTickersRouteImport } from './routes/admin/tickers'
+import { Route as AdminSourcesRouteImport } from './routes/admin/sources'
+import { Route as AdminNewsRouteImport } from './routes/admin/news'
 import { Route as AdminFactorsRouteImport } from './routes/admin/factors'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
+import { Route as ApiCronIngestNewsRouteImport } from './routes/api.cron.ingest-news'
 
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
@@ -48,6 +51,16 @@ const AdminTickersRoute = AdminTickersRouteImport.update({
   path: '/tickers',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminSourcesRoute = AdminSourcesRouteImport.update({
+  id: '/sources',
+  path: '/sources',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminNewsRoute = AdminNewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminFactorsRoute = AdminFactorsRouteImport.update({
   id: '/factors',
   path: '/factors',
@@ -58,24 +71,35 @@ const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
   path: '/api/trpc/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronIngestNewsRoute = ApiCronIngestNewsRouteImport.update({
+  id: '/api/cron/ingest-news',
+  path: '/api/cron/ingest-news',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/admin/factors': typeof AdminFactorsRoute
+  '/admin/news': typeof AdminNewsRoute
+  '/admin/sources': typeof AdminSourcesRoute
   '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/admin/factors': typeof AdminFactorsRoute
+  '/admin/news': typeof AdminNewsRoute
+  '/admin/sources': typeof AdminSourcesRoute
   '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
   '/admin': typeof AdminIndexRoute
+  '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRoutesById {
@@ -84,9 +108,12 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/admin/factors': typeof AdminFactorsRoute
+  '/admin/news': typeof AdminNewsRoute
+  '/admin/sources': typeof AdminSourcesRoute
   '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
 }
 export interface FileRouteTypes {
@@ -96,18 +123,24 @@ export interface FileRouteTypes {
     | '/admin'
     | '/about'
     | '/admin/factors'
+    | '/admin/news'
+    | '/admin/sources'
     | '/admin/tickers'
     | '/api/logs'
     | '/admin/'
+    | '/api/cron/ingest-news'
     | '/api/trpc/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
     | '/admin/factors'
+    | '/admin/news'
+    | '/admin/sources'
     | '/admin/tickers'
     | '/api/logs'
     | '/admin'
+    | '/api/cron/ingest-news'
     | '/api/trpc/$'
   id:
     | '__root__'
@@ -115,9 +148,12 @@ export interface FileRouteTypes {
     | '/admin'
     | '/about'
     | '/admin/factors'
+    | '/admin/news'
+    | '/admin/sources'
     | '/admin/tickers'
     | '/api/logs'
     | '/admin/'
+    | '/api/cron/ingest-news'
     | '/api/trpc/$'
   fileRoutesById: FileRoutesById
 }
@@ -126,6 +162,7 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   ApiLogsRoute: typeof ApiLogsRoute
+  ApiCronIngestNewsRoute: typeof ApiCronIngestNewsRoute
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
 }
 
@@ -173,6 +210,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminTickersRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/sources': {
+      id: '/admin/sources'
+      path: '/sources'
+      fullPath: '/admin/sources'
+      preLoaderRoute: typeof AdminSourcesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/news': {
+      id: '/admin/news'
+      path: '/news'
+      fullPath: '/admin/news'
+      preLoaderRoute: typeof AdminNewsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/factors': {
       id: '/admin/factors'
       path: '/factors'
@@ -187,17 +238,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTrpcSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/ingest-news': {
+      id: '/api/cron/ingest-news'
+      path: '/api/cron/ingest-news'
+      fullPath: '/api/cron/ingest-news'
+      preLoaderRoute: typeof ApiCronIngestNewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AdminRouteRouteChildren {
   AdminFactorsRoute: typeof AdminFactorsRoute
+  AdminNewsRoute: typeof AdminNewsRoute
+  AdminSourcesRoute: typeof AdminSourcesRoute
   AdminTickersRoute: typeof AdminTickersRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminFactorsRoute: AdminFactorsRoute,
+  AdminNewsRoute: AdminNewsRoute,
+  AdminSourcesRoute: AdminSourcesRoute,
   AdminTickersRoute: AdminTickersRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
@@ -211,6 +273,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   ApiLogsRoute: ApiLogsRoute,
+  ApiCronIngestNewsRoute: ApiCronIngestNewsRoute,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,
 }
 export const routeTree = rootRouteImport
