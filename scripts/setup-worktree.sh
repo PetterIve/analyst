@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
-# Configure a worktree's Vite port, label, and per-worktree database.
+# Configure a worktree's Vite port, label, and DATABASE_URL.
 #
-# All worktrees share one Postgres container (see CLAUDE.md). Isolation is by
-# database name, not by container: worktree N uses db `analyst_wtN` (N=0 uses
-# plain `analyst`). This script ensures the db exists, then writes the matching
-# VITE_PORT, VITE_WT_LABEL, and DATABASE_URL into .env.local.
+# All worktrees share the one Postgres container from the main checkout
+# (`docker compose up -d` is a one-time-per-machine step). Isolation is
+# by database name: worktree N uses db `analyst_wtN` (N=0 uses plain
+# `analyst`). The database itself is created by `prisma migrate dev` on
+# first run; this script just writes the config.
 #
 # Usage: scripts/setup-worktree.sh <N>
 #   N=0 is the main checkout; N≥1 is a .claude/worktrees/wtN checkout.
@@ -34,31 +35,6 @@ fi
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_LOCAL="$REPO_ROOT/.env.local"
 
-cd "$REPO_ROOT"
-
-# Ensure the shared Postgres container is running.
-if ! docker compose ps postgres --status running --quiet | grep -q .; then
-  echo "Starting shared Postgres container..."
-  docker compose up -d postgres
-  for _ in $(seq 1 30); do
-    if docker compose exec -T postgres pg_isready -U analyst -d analyst >/dev/null 2>&1; then
-      break
-    fi
-    sleep 1
-  done
-fi
-
-# Create the per-worktree database if it doesn't exist.
-exists="$(docker compose exec -T postgres psql -U analyst -d postgres -tAc \
-  "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}'" | tr -d '[:space:]')"
-if [[ "$exists" != "1" ]]; then
-  echo "Creating database ${DB_NAME}..."
-  docker compose exec -T postgres createdb -U analyst "${DB_NAME}"
-else
-  echo "Database ${DB_NAME} already exists."
-fi
-
-# --- .env.local (read by Vite / dotenv-cli) ----------------------------------
 touch "$ENV_LOCAL"
 
 update_var() {
@@ -84,7 +60,6 @@ if [[ "$N" != "0" ]]; then
     while IFS= read -r line || [[ -n "$line" ]]; do
       [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
       key="${line%%=*}"
-      # Don't copy keys that the worktree script owns below.
       case "$key" in
         VITE_PORT|VITE_WT_LABEL|DATABASE_URL) continue ;;
       esac
@@ -106,7 +81,7 @@ echo "  DB_NAME       = ${DB_NAME}"
 echo "  VITE_PORT     = ${VITE_PORT}"
 echo "  VITE_WT_LABEL = ${WT_LABEL:-<none>}"
 echo
-echo "Next steps:"
-echo "  npm run db:migrate"
+echo "Next steps (assumes main's postgres is already running):"
+echo "  npm run db:migrate  # creates ${DB_NAME} and applies migrations"
 echo "  npm run db:seed     # optional; seeds tickers/factors"
 echo "  npm run dev         # → http://localhost:${VITE_PORT}/"
