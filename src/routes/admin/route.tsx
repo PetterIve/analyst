@@ -1,12 +1,6 @@
 import { Link, Outlet, createFileRoute, useRouterState } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
-import {
-  ClerkLoaded,
-  ClerkLoading,
-  SignIn,
-  UserButton,
-  useAuth,
-} from '@clerk/tanstack-react-start'
+import { SignIn, UserButton, useAuth } from '@clerk/tanstack-react-start'
 import { Toaster } from '#/components/ui/sonner'
 import { Tweaks } from '#/components/Tweaks'
 import { Icon, type IconName } from '#/components/DesignIcons'
@@ -109,65 +103,9 @@ function SignInScreen() {
             Admin access is limited to whitelisted emails.
           </div>
         </div>
-        <div style={{ minHeight: 480, display: 'grid' }}>
-          <ClerkLoading>
-            <SignInSkeleton />
-          </ClerkLoading>
-          <ClerkLoaded>
-            <SignIn routing="hash" />
-          </ClerkLoaded>
-        </div>
+        <SignIn routing="hash" />
       </div>
       <Tweaks />
-    </div>
-  )
-}
-
-function SignInSkeleton() {
-  const bar = (width: string | number, height = 10) => (
-    <div
-      className="skeleton-bar"
-      style={{
-        width,
-        height,
-        borderRadius: 4,
-        background: 'var(--bg-2)',
-      }}
-    />
-  )
-  return (
-    <div
-      className="card pad"
-      style={{
-        width: 380,
-        minHeight: 460,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 16,
-        justifyContent: 'flex-start',
-      }}
-      aria-busy="true"
-      aria-label="Loading sign-in"
-    >
-      <div className="stack" style={{ gap: 6, marginBottom: 8 }}>
-        {bar(120, 14)}
-        {bar(200, 10)}
-      </div>
-      <div className="stack" style={{ gap: 8 }}>
-        {bar('100%', 38)}
-        {bar('100%', 38)}
-      </div>
-      <div className="stack" style={{ gap: 10 }}>
-        {bar(60, 10)}
-        {bar('100%', 38)}
-      </div>
-      <div style={{ marginTop: 8 }}>{bar('100%', 40)}</div>
-      <div
-        className="row-d"
-        style={{ marginTop: 'auto', justifyContent: 'center', gap: 6 }}
-      >
-        {bar(160, 10)}
-      </div>
     </div>
   )
 }
