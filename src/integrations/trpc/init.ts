@@ -52,5 +52,11 @@ export const adminProcedure = t.procedure.use(({ ctx, next }) => {
   if (!email || !whitelist.includes(email)) {
     throw new TRPCError({ code: 'UNAUTHORIZED' })
   }
+  if (!ctx.userEmailVerified) {
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'Email not verified.',
+    })
+  }
   return next()
 })

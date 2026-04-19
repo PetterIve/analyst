@@ -30,17 +30,24 @@ To avoid a `clerkClient().users.getUser()` roundtrip on every admin mutation,
 add the email to the session token itself:
 
 1. Clerk Dashboard → **Sessions** → **Customize session token**.
-2. Add the claim:
+2. Add the claims:
    ```json
    {
-     "email": "{{user.primary_email_address}}"
+     "email": "{{user.primary_email_address}}",
+     "email_verified": "{{user.email_verified}}"
    }
    ```
-3. Save. New sessions now carry `email` in `sessionClaims`, which the server
-   reads directly.
+3. Save. New sessions now carry both in `sessionClaims`; the server reads
+   them directly.
 
-If you skip this step, `adminProcedure` still works — it just falls back to
-fetching the user from the Clerk API per request.
+`adminProcedure` requires **both** that the email matches the whitelist AND
+that `email_verified` is `true` — without the verified check, an attacker
+could sign up with an unverified email matching an `ADMIN_EMAILS` entry and
+get in.
+
+If you skip this dashboard step, the gate still works — it falls back to
+fetching the user from the Clerk API per request and reads the verification
+status from there.
 
 ## Env vars
 
