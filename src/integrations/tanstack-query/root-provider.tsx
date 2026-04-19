@@ -15,11 +15,25 @@ function getUrl() {
   return `${base}/api/trpc`
 }
 
+async function getClerkToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null
+  const clerk = (window as unknown as { Clerk?: { session?: { getToken: () => Promise<string | null> } } }).Clerk
+  try {
+    return (await clerk?.session?.getToken()) ?? null
+  } catch {
+    return null
+  }
+}
+
 export const trpcClient = createTRPCClient<TRPCRouter>({
   links: [
     httpBatchStreamLink({
       transformer: superjson,
       url: getUrl(),
+      async headers() {
+        const token = await getClerkToken()
+        return token ? { Authorization: `Bearer ${token}` } : {}
+      },
     }),
   ],
 })
