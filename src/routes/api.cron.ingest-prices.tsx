@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { prisma } from '#/server/db'
-import { logger } from '#/lib/logger.server'
+import { withCronRun } from '#/lib/obs/cron.server'
 import { backfillTicker } from '#/lib/ingest/prices/backfill'
 
 const JOB_NAME = 'ingest-prices'
@@ -17,79 +17,51 @@ async function handler({ request }: { request: Request }) {
     return new Response('Unauthorized', { status: 401 })
   }
 
-  const startedAt = new Date()
-  const run = await prisma.cronRun.create({
-    data: {
-      jobName: JOB_NAME,
-      startedAt,
-      status: 'ok',
-    },
-  })
-  logger.info({ job: JOB_NAME, runId: run.id }, 'cron starting')
-
   try {
-    const tickers = await prisma.ticker.findMany({
-      where: { active: true },
-      orderBy: { symbol: 'asc' },
-      select: { id: true, symbol: true },
-    })
+    const payload = await withCronRun(JOB_NAME, async ({ log }) => {
+      const tickers = await prisma.ticker.findMany({
+        where: { active: true },
+        orderBy: { symbol: 'asc' },
+        select: { id: true, symbol: true },
+      })
 
-    const results = []
-    for (const t of tickers) {
-      const r = await backfillTicker(t.id, { yearsBack: 1 })
-      results.push(r)
-    }
+      const results = []
+      for (const t of tickers) {
+        const r = await backfillTicker(t.id, { yearsBack: 1 })
+        results.push(r)
+        if (r.error) {
+          log.warn({ symbol: t.symbol, err: r.error }, 'ticker backfill failed')
+        } else {
+          log.info(
+            { symbol: t.symbol, rowsInserted: r.rowsInserted },
+            'ticker backfill ok',
+          )
+        }
+      }
 
-    const errors = results.filter((r) => r.error).length
-    const inserted = results.reduce((n, r) => n + r.rowsInserted, 0)
-    const durationMs = Date.now() - startedAt.getTime()
-    logger.info(
-      {
-        job: JOB_NAME,
-        runId: run.id,
-        tickers: results.length,
-        errors,
-        rowsInserted: inserted,
-        durationMs,
-      },
-      'cron finished',
-    )
+      const errors = results.filter((r) => r.error).length
+      const inserted = results.reduce((n, r) => n + r.rowsInserted, 0)
+      const status = errors > 0 ? 'error' : 'ok'
+      const errorMsg =
+        errors > 0 ? `${errors}/${results.length} tickers failed` : null
 
-    await prisma.cronRun.update({
-      where: { id: run.id },
-      data: {
-        finishedAt: new Date(),
-        status: errors > 0 ? 'error' : 'ok',
-        errorMsg:
-          errors > 0
-            ? `${errors}/${results.length} tickers failed`
-            : null,
-        metrics: {
+      return {
+        result: {
+          ok: errors === 0,
           tickers: results.length,
           errors,
           rowsInserted: inserted,
         },
-      },
+        status,
+        errorMsg,
+        metrics: { tickers: results.length, errors, rowsInserted: inserted },
+      }
     })
 
-    return Response.json({
-      ok: errors === 0,
-      tickers: results.length,
-      errors,
-      rowsInserted: inserted,
-    })
+    return Response.json(payload)
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err)
-    logger.error({ err: msg }, 'ingest-prices cron failed')
-    await prisma.cronRun.update({
-      where: { id: run.id },
-      data: {
-        finishedAt: new Date(),
-        status: 'error',
-        errorMsg: msg,
-      },
-    })
-    return new Response(msg, { status: 500 })
+    const message = err instanceof Error ? err.message : String(err)
+    return new Response(message, { status: 500 })
   }
 }
 
