@@ -19,20 +19,32 @@ export interface IngestResult {
   totalInserted: number
 }
 
-export async function runNewsIngest(opts: { force?: boolean } = {}): Promise<IngestResult> {
+export type SourceRow = Awaited<ReturnType<typeof prisma.newsSource.findMany>>[number]
+
+export interface IngestHooks {
+  onSourceStart?: (source: SourceRow) => void
+  onSourceEnd?: (outcome: SourceResult) => void
+}
+
+export async function runNewsIngest(
+  opts: { force?: boolean } & IngestHooks = {},
+): Promise<IngestResult> {
   const startedAt = new Date()
   const sources = await prisma.newsSource.findMany({ where: { active: true } })
 
   const perSource = await Promise.all(
-    sources.map((source) => ingestOneSource(source, opts.force ?? false)),
+    sources.map(async (source) => {
+      opts.onSourceStart?.(source)
+      const outcome = await ingestOneSource(source, opts.force ?? false)
+      opts.onSourceEnd?.(outcome)
+      return outcome
+    }),
   )
 
   const finishedAt = new Date()
   const totalInserted = perSource.reduce((n, r) => n + r.inserted, 0)
   return { startedAt, finishedAt, perSource, totalInserted }
 }
-
-type SourceRow = Awaited<ReturnType<typeof prisma.newsSource.findMany>>[number]
 
 async function ingestOneSource(source: SourceRow, force: boolean): Promise<SourceResult> {
   const base: SourceResult = {

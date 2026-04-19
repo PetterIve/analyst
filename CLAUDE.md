@@ -44,3 +44,23 @@ above) — don't `docker compose up` from a worktree directory.
 USE_NEON=1 npm run dev
 ```
 `vite-plugin-neon-new` provisions a Neon branch, seeds it from `db/init.sql`, and **rewrites `DATABASE_URL` in `.env.local`** — restore the local URL when switching back.
+
+## Cron routes
+
+Every `src/routes/api.cron.*.tsx` handler must log generously via
+`#/lib/logger.server` — crons run unattended and the logs are the only
+retrospective signal when something misbehaves. At a minimum, emit:
+
+- `info` on start with `{ job, runId }`
+- `info` (or `warn` on failure) per unit of work (per source, per ticker, …)
+  with counts (`fetched`, `inserted`, etc.)
+- `info` on finish with `{ durationMs, errors, rowsInserted, … }`
+- `error` with the caught exception message if the whole run blows up
+
+Also write a `CronRun` row (`startedAt`, `finishedAt`, `status`, `metrics`,
+`errorMsg`) so the admin UI can surface recent runs without grepping logs.
+See `src/routes/api.cron.ingest-news.tsx` / `ingest-prices.tsx` for the
+shape. Inner ingest libraries should accept callback hooks
+(`onSourceStart` / `onSourceEnd` / …) so the cron handler — not the lib —
+owns the log messages, keeping the lib reusable for tRPC "Run now"
+buttons that want their own logging context.
