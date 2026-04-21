@@ -24,7 +24,7 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
   {
     label: 'Analyst',
     entries: [
-      { label: 'Alert feed', to: '/admin/feed', icon: 'bell', enabled: false, task: 'T11' },
+      { label: 'Alert feed', to: '/admin/feed', icon: 'bell', enabled: false, task: 'T09' },
       { label: 'Tickers', to: '/admin/tickers', icon: 'ticker', enabled: true },
       { label: 'News', to: '/admin/news', icon: 'feed', enabled: true },
       { label: 'Prices', to: '/admin/prices', icon: 'chart', enabled: true },
@@ -38,8 +38,9 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
       { label: 'Factors', to: '/admin/factors', icon: 'sliders', enabled: true },
       { label: 'Sources', to: '/admin/sources', icon: 'feed', enabled: true },
       { label: 'X accounts', to: '/admin/x-accounts', icon: 'x', enabled: false, task: 'T05' },
-      { label: 'Extractor', to: '/admin/extractor', icon: 'cpu', enabled: false, task: 'T07' },
-      { label: 'Prompt', to: '/admin/prompt', icon: 'terminal', enabled: false, task: 'T07' },
+      { label: 'Extractor', to: '/admin/extractor', icon: 'cpu', enabled: true },
+      { label: 'Candidates', to: '/admin/candidates', icon: 'layers', enabled: true },
+      { label: 'Prompt', to: '/admin/prompt', icon: 'terminal', enabled: true },
       { label: 'Workers', to: '/admin/workers', icon: 'clock', enabled: false, task: 'T16' },
     ],
   },
@@ -52,6 +53,9 @@ const CRUMBS: Record<string, ReadonlyArray<string>> = {
   '/admin/events': ['Analyst', 'Event catalog'],
   '/admin/factors': ['Admin', 'Factors'],
   '/admin/sources': ['Admin', 'Sources'],
+  '/admin/extractor': ['Admin', 'Extractor'],
+  '/admin/candidates': ['Admin', 'Candidates'],
+  '/admin/prompt': ['Admin', 'Prompt'],
 }
 
 export const Route = createFileRoute('/admin')({

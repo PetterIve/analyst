@@ -16,13 +16,19 @@ import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as ApiLogsRouteImport } from './routes/api.logs'
 import { Route as AdminTickersRouteImport } from './routes/admin/tickers'
 import { Route as AdminSourcesRouteImport } from './routes/admin/sources'
+import { Route as AdminPromptRouteImport } from './routes/admin/prompt'
 import { Route as AdminNewsRouteImport } from './routes/admin/news'
 import { Route as AdminFactorsRouteImport } from './routes/admin/factors'
+import { Route as AdminExtractorRouteImport } from './routes/admin/extractor'
+import { Route as AdminCandidatesRouteImport } from './routes/admin/candidates'
 import { Route as AdminPricesIndexRouteImport } from './routes/admin/prices/index'
 import { Route as AdminEventsIndexRouteImport } from './routes/admin/events/index'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
+import { Route as ApiTelegramWebhookRouteImport } from './routes/api.telegram.webhook'
+import { Route as ApiTelegramRegisterRouteImport } from './routes/api.telegram.register'
 import { Route as ApiCronIngestPricesRouteImport } from './routes/api.cron.ingest-prices'
 import { Route as ApiCronIngestNewsRouteImport } from './routes/api.cron.ingest-news'
+import { Route as ApiCronExtractRouteImport } from './routes/api.cron.extract'
 import { Route as AdminPricesSymbolRouteImport } from './routes/admin/prices/$symbol'
 import { Route as AdminEventsSlugRouteImport } from './routes/admin/events/$slug'
 
@@ -61,6 +67,11 @@ const AdminSourcesRoute = AdminSourcesRouteImport.update({
   path: '/sources',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminPromptRoute = AdminPromptRouteImport.update({
+  id: '/prompt',
+  path: '/prompt',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminNewsRoute = AdminNewsRouteImport.update({
   id: '/news',
   path: '/news',
@@ -69,6 +80,16 @@ const AdminNewsRoute = AdminNewsRouteImport.update({
 const AdminFactorsRoute = AdminFactorsRouteImport.update({
   id: '/factors',
   path: '/factors',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminExtractorRoute = AdminExtractorRouteImport.update({
+  id: '/extractor',
+  path: '/extractor',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminCandidatesRoute = AdminCandidatesRouteImport.update({
+  id: '/candidates',
+  path: '/candidates',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminPricesIndexRoute = AdminPricesIndexRouteImport.update({
@@ -86,6 +107,16 @@ const ApiTrpcSplatRoute = ApiTrpcSplatRouteImport.update({
   path: '/api/trpc/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTelegramWebhookRoute = ApiTelegramWebhookRouteImport.update({
+  id: '/api/telegram/webhook',
+  path: '/api/telegram/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTelegramRegisterRoute = ApiTelegramRegisterRouteImport.update({
+  id: '/api/telegram/register',
+  path: '/api/telegram/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCronIngestPricesRoute = ApiCronIngestPricesRouteImport.update({
   id: '/api/cron/ingest-prices',
   path: '/api/cron/ingest-prices',
@@ -94,6 +125,11 @@ const ApiCronIngestPricesRoute = ApiCronIngestPricesRouteImport.update({
 const ApiCronIngestNewsRoute = ApiCronIngestNewsRouteImport.update({
   id: '/api/cron/ingest-news',
   path: '/api/cron/ingest-news',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronExtractRoute = ApiCronExtractRouteImport.update({
+  id: '/api/cron/extract',
+  path: '/api/cron/extract',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminPricesSymbolRoute = AdminPricesSymbolRouteImport.update({
@@ -111,16 +147,22 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/admin/candidates': typeof AdminCandidatesRoute
+  '/admin/extractor': typeof AdminExtractorRoute
   '/admin/factors': typeof AdminFactorsRoute
   '/admin/news': typeof AdminNewsRoute
+  '/admin/prompt': typeof AdminPromptRoute
   '/admin/sources': typeof AdminSourcesRoute
   '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/events/$slug': typeof AdminEventsSlugRoute
   '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
+  '/api/cron/extract': typeof ApiCronExtractRoute
   '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
+  '/api/telegram/register': typeof ApiTelegramRegisterRoute
+  '/api/telegram/webhook': typeof ApiTelegramWebhookRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
   '/admin/events/': typeof AdminEventsIndexRoute
   '/admin/prices/': typeof AdminPricesIndexRoute
@@ -128,16 +170,22 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin/candidates': typeof AdminCandidatesRoute
+  '/admin/extractor': typeof AdminExtractorRoute
   '/admin/factors': typeof AdminFactorsRoute
   '/admin/news': typeof AdminNewsRoute
+  '/admin/prompt': typeof AdminPromptRoute
   '/admin/sources': typeof AdminSourcesRoute
   '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
   '/admin': typeof AdminIndexRoute
   '/admin/events/$slug': typeof AdminEventsSlugRoute
   '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
+  '/api/cron/extract': typeof ApiCronExtractRoute
   '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
+  '/api/telegram/register': typeof ApiTelegramRegisterRoute
+  '/api/telegram/webhook': typeof ApiTelegramWebhookRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
   '/admin/events': typeof AdminEventsIndexRoute
   '/admin/prices': typeof AdminPricesIndexRoute
@@ -147,16 +195,22 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/admin/candidates': typeof AdminCandidatesRoute
+  '/admin/extractor': typeof AdminExtractorRoute
   '/admin/factors': typeof AdminFactorsRoute
   '/admin/news': typeof AdminNewsRoute
+  '/admin/prompt': typeof AdminPromptRoute
   '/admin/sources': typeof AdminSourcesRoute
   '/admin/tickers': typeof AdminTickersRoute
   '/api/logs': typeof ApiLogsRoute
   '/admin/': typeof AdminIndexRoute
   '/admin/events/$slug': typeof AdminEventsSlugRoute
   '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
+  '/api/cron/extract': typeof ApiCronExtractRoute
   '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
+  '/api/telegram/register': typeof ApiTelegramRegisterRoute
+  '/api/telegram/webhook': typeof ApiTelegramWebhookRoute
   '/api/trpc/$': typeof ApiTrpcSplatRoute
   '/admin/events/': typeof AdminEventsIndexRoute
   '/admin/prices/': typeof AdminPricesIndexRoute
@@ -167,16 +221,22 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/about'
+    | '/admin/candidates'
+    | '/admin/extractor'
     | '/admin/factors'
     | '/admin/news'
+    | '/admin/prompt'
     | '/admin/sources'
     | '/admin/tickers'
     | '/api/logs'
     | '/admin/'
     | '/admin/events/$slug'
     | '/admin/prices/$symbol'
+    | '/api/cron/extract'
     | '/api/cron/ingest-news'
     | '/api/cron/ingest-prices'
+    | '/api/telegram/register'
+    | '/api/telegram/webhook'
     | '/api/trpc/$'
     | '/admin/events/'
     | '/admin/prices/'
@@ -184,16 +244,22 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/admin/candidates'
+    | '/admin/extractor'
     | '/admin/factors'
     | '/admin/news'
+    | '/admin/prompt'
     | '/admin/sources'
     | '/admin/tickers'
     | '/api/logs'
     | '/admin'
     | '/admin/events/$slug'
     | '/admin/prices/$symbol'
+    | '/api/cron/extract'
     | '/api/cron/ingest-news'
     | '/api/cron/ingest-prices'
+    | '/api/telegram/register'
+    | '/api/telegram/webhook'
     | '/api/trpc/$'
     | '/admin/events'
     | '/admin/prices'
@@ -202,16 +268,22 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/about'
+    | '/admin/candidates'
+    | '/admin/extractor'
     | '/admin/factors'
     | '/admin/news'
+    | '/admin/prompt'
     | '/admin/sources'
     | '/admin/tickers'
     | '/api/logs'
     | '/admin/'
     | '/admin/events/$slug'
     | '/admin/prices/$symbol'
+    | '/api/cron/extract'
     | '/api/cron/ingest-news'
     | '/api/cron/ingest-prices'
+    | '/api/telegram/register'
+    | '/api/telegram/webhook'
     | '/api/trpc/$'
     | '/admin/events/'
     | '/admin/prices/'
@@ -222,8 +294,11 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   ApiLogsRoute: typeof ApiLogsRoute
+  ApiCronExtractRoute: typeof ApiCronExtractRoute
   ApiCronIngestNewsRoute: typeof ApiCronIngestNewsRoute
   ApiCronIngestPricesRoute: typeof ApiCronIngestPricesRoute
+  ApiTelegramRegisterRoute: typeof ApiTelegramRegisterRoute
+  ApiTelegramWebhookRoute: typeof ApiTelegramWebhookRoute
   ApiTrpcSplatRoute: typeof ApiTrpcSplatRoute
 }
 
@@ -278,6 +353,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSourcesRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/prompt': {
+      id: '/admin/prompt'
+      path: '/prompt'
+      fullPath: '/admin/prompt'
+      preLoaderRoute: typeof AdminPromptRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/news': {
       id: '/admin/news'
       path: '/news'
@@ -290,6 +372,20 @@ declare module '@tanstack/react-router' {
       path: '/factors'
       fullPath: '/admin/factors'
       preLoaderRoute: typeof AdminFactorsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/extractor': {
+      id: '/admin/extractor'
+      path: '/extractor'
+      fullPath: '/admin/extractor'
+      preLoaderRoute: typeof AdminExtractorRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/candidates': {
+      id: '/admin/candidates'
+      path: '/candidates'
+      fullPath: '/admin/candidates'
+      preLoaderRoute: typeof AdminCandidatesRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/prices/': {
@@ -313,6 +409,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTrpcSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/telegram/webhook': {
+      id: '/api/telegram/webhook'
+      path: '/api/telegram/webhook'
+      fullPath: '/api/telegram/webhook'
+      preLoaderRoute: typeof ApiTelegramWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/telegram/register': {
+      id: '/api/telegram/register'
+      path: '/api/telegram/register'
+      fullPath: '/api/telegram/register'
+      preLoaderRoute: typeof ApiTelegramRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/cron/ingest-prices': {
       id: '/api/cron/ingest-prices'
       path: '/api/cron/ingest-prices'
@@ -325,6 +435,13 @@ declare module '@tanstack/react-router' {
       path: '/api/cron/ingest-news'
       fullPath: '/api/cron/ingest-news'
       preLoaderRoute: typeof ApiCronIngestNewsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/extract': {
+      id: '/api/cron/extract'
+      path: '/api/cron/extract'
+      fullPath: '/api/cron/extract'
+      preLoaderRoute: typeof ApiCronExtractRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/prices/$symbol': {
@@ -345,8 +462,11 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteRouteChildren {
+  AdminCandidatesRoute: typeof AdminCandidatesRoute
+  AdminExtractorRoute: typeof AdminExtractorRoute
   AdminFactorsRoute: typeof AdminFactorsRoute
   AdminNewsRoute: typeof AdminNewsRoute
+  AdminPromptRoute: typeof AdminPromptRoute
   AdminSourcesRoute: typeof AdminSourcesRoute
   AdminTickersRoute: typeof AdminTickersRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -357,8 +477,11 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminCandidatesRoute: AdminCandidatesRoute,
+  AdminExtractorRoute: AdminExtractorRoute,
   AdminFactorsRoute: AdminFactorsRoute,
   AdminNewsRoute: AdminNewsRoute,
+  AdminPromptRoute: AdminPromptRoute,
   AdminSourcesRoute: AdminSourcesRoute,
   AdminTickersRoute: AdminTickersRoute,
   AdminIndexRoute: AdminIndexRoute,
@@ -377,8 +500,11 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   ApiLogsRoute: ApiLogsRoute,
+  ApiCronExtractRoute: ApiCronExtractRoute,
   ApiCronIngestNewsRoute: ApiCronIngestNewsRoute,
   ApiCronIngestPricesRoute: ApiCronIngestPricesRoute,
+  ApiTelegramRegisterRoute: ApiTelegramRegisterRoute,
+  ApiTelegramWebhookRoute: ApiTelegramWebhookRoute,
   ApiTrpcSplatRoute: ApiTrpcSplatRoute,
 }
 export const routeTree = rootRouteImport
