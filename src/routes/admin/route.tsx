@@ -24,7 +24,8 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
   {
     label: 'Analyst',
     entries: [
-      { label: 'Alert feed', to: '/admin/feed', icon: 'bell', enabled: false, task: 'T09' },
+      { label: 'Dashboard', to: '/admin/dashboard', icon: 'chart', enabled: true },
+      { label: 'Alerts', to: '/admin/alerts', icon: 'bell', enabled: true },
       { label: 'Tickers', to: '/admin/tickers', icon: 'ticker', enabled: true },
       { label: 'News', to: '/admin/news', icon: 'feed', enabled: true },
       { label: 'Prices', to: '/admin/prices', icon: 'chart', enabled: true },
@@ -47,6 +48,8 @@ const NAV_GROUPS: ReadonlyArray<NavGroup> = [
 ]
 
 const CRUMBS: Record<string, ReadonlyArray<string>> = {
+  '/admin/dashboard': ['Analyst', 'Dashboard'],
+  '/admin/alerts': ['Analyst', 'Alerts'],
   '/admin/tickers': ['Analyst', 'Tickers'],
   '/admin/news': ['Analyst', 'News'],
   '/admin/prices': ['Analyst', 'Prices'],
