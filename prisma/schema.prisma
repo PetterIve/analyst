@@ -153,7 +153,8 @@ model EventClass {
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @updatedAt @map("updated_at")
 
-  instances EventInstance[]
+  instances  EventInstance[]
+  candidates EventCandidate[]
 
   @@map("event_classes")
 }
@@ -329,6 +330,29 @@ model PriceDaily {
 
   @@unique([tickerId, date])
   @@map("prices_daily")
+}
+
+/// Structured signal extracted from a single news item or X post by the LLM
+/// extractor (T07). The math/alert engine (T09) consumes these, which is what
+/// `consumedAt` tracks. Manual playground extractions don't persist here —
+/// only cron batch runs do.
+model EventCandidate {
+  id                Int             @id @default(autoincrement())
+  sourceKind        EventSourceKind @map("source_kind")
+  sourceRefId       Int             @map("source_ref_id")
+  extractedJson     Json            @map("extracted_json")
+  eventClassId      Int?            @map("event_class_id")
+  overallConfidence Float           @map("overall_confidence")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  consumedAt        DateTime?       @map("consumed_at")
+
+  eventClass EventClass? @relation(fields: [eventClassId], references: [id])
+
+  @@index([sourceKind, sourceRefId])
+  @@index([eventClassId])
+  @@index([consumedAt])
+  @@index([createdAt(sort: Desc)])
+  @@map("event_candidates")
 }
 
 model CronRun {

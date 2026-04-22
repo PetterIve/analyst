@@ -27,6 +27,13 @@ function NewsPage() {
 
   const sourceOptions = useMemo(() => sources ?? [], [sources])
   const items = data?.items ?? []
+  const itemIds = useMemo(() => items.map((i) => i.id), [items])
+  const { data: candidatesByNewsId } = useQuery(
+    trpc.candidate.latestBySourceIds.queryOptions(
+      { sourceKind: 'news', sourceRefIds: itemIds },
+      { enabled: itemIds.length > 0 },
+    ),
+  )
 
   return (
     <div className="page">
@@ -116,59 +123,114 @@ function NewsPage() {
             <thead>
               <tr>
                 <th>Title</th>
-                <th style={{ width: 160 }}>Source</th>
-                <th style={{ width: 160 }}>Published</th>
-                <th style={{ width: 120 }}>Processed</th>
+                <th style={{ width: 140 }}>Source</th>
+                <th style={{ width: 150 }}>Published</th>
+                <th style={{ width: 220 }}>Extraction</th>
               </tr>
             </thead>
             <tbody>
-              {items.map((item) => (
-                <tr key={item.id}>
-                  <td>
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      style={{ color: 'var(--fg-1)' }}
-                    >
-                      {item.title}
-                    </a>
-                    {item.bodyText ? (
-                      <div
-                        className="label-sm muted"
-                        style={{
-                          marginTop: 2,
-                          maxWidth: 680,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
+              {items.map((item) => {
+                const candidate = candidatesByNewsId?.[item.id]
+                return (
+                  <tr key={item.id}>
+                    <td>
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        style={{ color: 'var(--fg-1)' }}
                       >
-                        {item.bodyText.slice(0, 200)}
-                      </div>
-                    ) : null}
-                  </td>
-                  <td className="label-xs">{item.source.name}</td>
-                  <td className="label-xs mono">
-                    {item.publishedAt
-                      ? new Date(item.publishedAt).toLocaleString()
-                      : '—'}
-                  </td>
-                  <td>
-                    {item.processedAt ? (
-                      <span className="pill" style={{ color: 'var(--pos)' }}>
-                        done
-                      </span>
-                    ) : (
-                      <span className="label-xs muted">pending</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
+                        {item.title}
+                      </a>
+                      {item.bodyText ? (
+                        <div
+                          className="label-sm muted"
+                          style={{
+                            marginTop: 2,
+                            maxWidth: 680,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {item.bodyText.slice(0, 200)}
+                        </div>
+                      ) : null}
+                    </td>
+                    <td className="label-xs">{item.source.name}</td>
+                    <td className="label-xs mono">
+                      {item.publishedAt
+                        ? new Date(item.publishedAt).toLocaleString()
+                        : '—'}
+                    </td>
+                    <td>
+                      <NewsExtractionCell
+                        processedAt={item.processedAt}
+                        candidate={candidate ?? null}
+                      />
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         )}
       </div>
     </div>
+  )
+}
+
+interface NewsCandidateSummary {
+  id: number
+  eventClassSlug: string | null
+  overallConfidence: number
+  sentiment: string | null
+  tickers: string[]
+}
+
+function NewsExtractionCell({
+  processedAt,
+  candidate,
+}: {
+  processedAt: Date | string | null
+  candidate: NewsCandidateSummary | null
+}) {
+  if (!processedAt) {
+    return <span className="label-xs muted">pending</span>
+  }
+  if (!candidate) {
+    return (
+      <span className="pill" style={{ color: 'var(--fg-3)' }}>
+        processed · no signal
+      </span>
+    )
+  }
+  if (!candidate.eventClassSlug) {
+    return (
+      <a
+        href="/admin/candidates"
+        className="pill"
+        style={{ color: 'var(--fg-3)', textDecoration: 'none' }}
+      >
+        not relevant
+      </a>
+    )
+  }
+  return (
+    <a
+      href="/admin/candidates"
+      style={{ display: 'block', textDecoration: 'none', color: 'inherit' }}
+    >
+      <div className="mono" style={{ fontSize: 12 }}>
+        {candidate.eventClassSlug}
+      </div>
+      <div className="label-xs muted">
+        {candidate.sentiment ?? '—'} · conf{' '}
+        {candidate.overallConfidence.toFixed(2)}
+        {candidate.tickers.length > 0
+          ? ` · ${candidate.tickers.join(', ')}`
+          : ''}
+      </div>
+    </a>
   )
 }
