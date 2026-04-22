@@ -20,7 +20,9 @@ import { Route as AdminPromptRouteImport } from './routes/admin/prompt'
 import { Route as AdminNewsRouteImport } from './routes/admin/news'
 import { Route as AdminFactorsRouteImport } from './routes/admin/factors'
 import { Route as AdminExtractorRouteImport } from './routes/admin/extractor'
+import { Route as AdminDashboardRouteImport } from './routes/admin/dashboard'
 import { Route as AdminCandidatesRouteImport } from './routes/admin/candidates'
+import { Route as AdminAlertsRouteImport } from './routes/admin/alerts'
 import { Route as AdminPricesIndexRouteImport } from './routes/admin/prices/index'
 import { Route as AdminEventsIndexRouteImport } from './routes/admin/events/index'
 import { Route as ApiTrpcSplatRouteImport } from './routes/api.trpc.$'
@@ -29,6 +31,7 @@ import { Route as ApiTelegramRegisterRouteImport } from './routes/api.telegram.r
 import { Route as ApiCronIngestPricesRouteImport } from './routes/api.cron.ingest-prices'
 import { Route as ApiCronIngestNewsRouteImport } from './routes/api.cron.ingest-news'
 import { Route as ApiCronExtractRouteImport } from './routes/api.cron.extract'
+import { Route as ApiCronEngineTickRouteImport } from './routes/api.cron.engine-tick'
 import { Route as AdminPricesSymbolRouteImport } from './routes/admin/prices/$symbol'
 import { Route as AdminEventsSlugRouteImport } from './routes/admin/events/$slug'
 
@@ -87,9 +90,19 @@ const AdminExtractorRoute = AdminExtractorRouteImport.update({
   path: '/extractor',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminDashboardRoute = AdminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminCandidatesRoute = AdminCandidatesRouteImport.update({
   id: '/candidates',
   path: '/candidates',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAlertsRoute = AdminAlertsRouteImport.update({
+  id: '/alerts',
+  path: '/alerts',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminPricesIndexRoute = AdminPricesIndexRouteImport.update({
@@ -132,6 +145,11 @@ const ApiCronExtractRoute = ApiCronExtractRouteImport.update({
   path: '/api/cron/extract',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronEngineTickRoute = ApiCronEngineTickRouteImport.update({
+  id: '/api/cron/engine-tick',
+  path: '/api/cron/engine-tick',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminPricesSymbolRoute = AdminPricesSymbolRouteImport.update({
   id: '/prices/$symbol',
   path: '/prices/$symbol',
@@ -147,7 +165,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/admin/alerts': typeof AdminAlertsRoute
   '/admin/candidates': typeof AdminCandidatesRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/extractor': typeof AdminExtractorRoute
   '/admin/factors': typeof AdminFactorsRoute
   '/admin/news': typeof AdminNewsRoute
@@ -158,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/admin/events/$slug': typeof AdminEventsSlugRoute
   '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
+  '/api/cron/engine-tick': typeof ApiCronEngineTickRoute
   '/api/cron/extract': typeof ApiCronExtractRoute
   '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
@@ -170,7 +191,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin/alerts': typeof AdminAlertsRoute
   '/admin/candidates': typeof AdminCandidatesRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/extractor': typeof AdminExtractorRoute
   '/admin/factors': typeof AdminFactorsRoute
   '/admin/news': typeof AdminNewsRoute
@@ -181,6 +204,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/admin/events/$slug': typeof AdminEventsSlugRoute
   '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
+  '/api/cron/engine-tick': typeof ApiCronEngineTickRoute
   '/api/cron/extract': typeof ApiCronExtractRoute
   '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
@@ -195,7 +219,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/admin/alerts': typeof AdminAlertsRoute
   '/admin/candidates': typeof AdminCandidatesRoute
+  '/admin/dashboard': typeof AdminDashboardRoute
   '/admin/extractor': typeof AdminExtractorRoute
   '/admin/factors': typeof AdminFactorsRoute
   '/admin/news': typeof AdminNewsRoute
@@ -206,6 +232,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/admin/events/$slug': typeof AdminEventsSlugRoute
   '/admin/prices/$symbol': typeof AdminPricesSymbolRoute
+  '/api/cron/engine-tick': typeof ApiCronEngineTickRoute
   '/api/cron/extract': typeof ApiCronExtractRoute
   '/api/cron/ingest-news': typeof ApiCronIngestNewsRoute
   '/api/cron/ingest-prices': typeof ApiCronIngestPricesRoute
@@ -221,7 +248,9 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/about'
+    | '/admin/alerts'
     | '/admin/candidates'
+    | '/admin/dashboard'
     | '/admin/extractor'
     | '/admin/factors'
     | '/admin/news'
@@ -232,6 +261,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/events/$slug'
     | '/admin/prices/$symbol'
+    | '/api/cron/engine-tick'
     | '/api/cron/extract'
     | '/api/cron/ingest-news'
     | '/api/cron/ingest-prices'
@@ -244,7 +274,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/admin/alerts'
     | '/admin/candidates'
+    | '/admin/dashboard'
     | '/admin/extractor'
     | '/admin/factors'
     | '/admin/news'
@@ -255,6 +287,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/admin/events/$slug'
     | '/admin/prices/$symbol'
+    | '/api/cron/engine-tick'
     | '/api/cron/extract'
     | '/api/cron/ingest-news'
     | '/api/cron/ingest-prices'
@@ -268,7 +301,9 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/about'
+    | '/admin/alerts'
     | '/admin/candidates'
+    | '/admin/dashboard'
     | '/admin/extractor'
     | '/admin/factors'
     | '/admin/news'
@@ -279,6 +314,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/admin/events/$slug'
     | '/admin/prices/$symbol'
+    | '/api/cron/engine-tick'
     | '/api/cron/extract'
     | '/api/cron/ingest-news'
     | '/api/cron/ingest-prices'
@@ -294,6 +330,7 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   ApiLogsRoute: typeof ApiLogsRoute
+  ApiCronEngineTickRoute: typeof ApiCronEngineTickRoute
   ApiCronExtractRoute: typeof ApiCronExtractRoute
   ApiCronIngestNewsRoute: typeof ApiCronIngestNewsRoute
   ApiCronIngestPricesRoute: typeof ApiCronIngestPricesRoute
@@ -381,11 +418,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminExtractorRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/dashboard': {
+      id: '/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/candidates': {
       id: '/admin/candidates'
       path: '/candidates'
       fullPath: '/admin/candidates'
       preLoaderRoute: typeof AdminCandidatesRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/alerts': {
+      id: '/admin/alerts'
+      path: '/alerts'
+      fullPath: '/admin/alerts'
+      preLoaderRoute: typeof AdminAlertsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/prices/': {
@@ -444,6 +495,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronExtractRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/engine-tick': {
+      id: '/api/cron/engine-tick'
+      path: '/api/cron/engine-tick'
+      fullPath: '/api/cron/engine-tick'
+      preLoaderRoute: typeof ApiCronEngineTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/prices/$symbol': {
       id: '/admin/prices/$symbol'
       path: '/prices/$symbol'
@@ -462,7 +520,9 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteRouteChildren {
+  AdminAlertsRoute: typeof AdminAlertsRoute
   AdminCandidatesRoute: typeof AdminCandidatesRoute
+  AdminDashboardRoute: typeof AdminDashboardRoute
   AdminExtractorRoute: typeof AdminExtractorRoute
   AdminFactorsRoute: typeof AdminFactorsRoute
   AdminNewsRoute: typeof AdminNewsRoute
@@ -477,7 +537,9 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAlertsRoute: AdminAlertsRoute,
   AdminCandidatesRoute: AdminCandidatesRoute,
+  AdminDashboardRoute: AdminDashboardRoute,
   AdminExtractorRoute: AdminExtractorRoute,
   AdminFactorsRoute: AdminFactorsRoute,
   AdminNewsRoute: AdminNewsRoute,
@@ -500,6 +562,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   ApiLogsRoute: ApiLogsRoute,
+  ApiCronEngineTickRoute: ApiCronEngineTickRoute,
   ApiCronExtractRoute: ApiCronExtractRoute,
   ApiCronIngestNewsRoute: ApiCronIngestNewsRoute,
   ApiCronIngestPricesRoute: ApiCronIngestPricesRoute,
